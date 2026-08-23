@@ -3,173 +3,227 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
-<title>Phone</title>
+<title>IzPhone</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg:#0b0d12; --card:#141824; --accent:#6c5ce7; --green:#00b894;
-    --red:#ff6b81; --text:#eef0f6; --muted:#8b93a7; --line:#222836;
-  }
-  *{box-sizing:border-box;margin:0;padding:0;user-select:none;-webkit-tap-highlight-color:transparent}
-  body{background:transparent;font-family:Inter,Segoe UI,system-ui,sans-serif;color:var(--text);overflow:hidden}
-  #phone{
-    width:320px;height:640px;margin:20px auto;background:linear-gradient(160deg,#12151f,#0a0c12);
-    border-radius:36px;border:3px solid #2a2f3f;position:relative;overflow:hidden;
-    box-shadow:0 20px 60px rgba(0,0,0,.55);
-  }
-  .notch{position:absolute;top:8px;left:50%;transform:translateX(-50%);width:120px;height:22px;background:#000;border-radius:12px;z-index:5}
-  .status{padding:36px 18px 8px;display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
-  .screen{height:calc(100% - 90px);overflow:hidden;position:relative}
-  .page{position:absolute;inset:0;padding:12px 16px;display:none;flex-direction:column;gap:10px}
-  .page.active{display:flex}
-  .home-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:24px}
-  .app{
-    background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 8px;
-    text-align:center;cursor:pointer;transition:.15s;
-  }
-  .app:hover{transform:translateY(-2px);border-color:var(--accent)}
-  .app .icon{
-    width:52px;height:52px;margin:0 auto 8px;border-radius:14px;display:flex;align-items:center;justify-content:center;
-    font-size:26px;font-weight:700;
-  }
-  .app span{font-size:12px;color:var(--muted)}
-  .icon-call{background:linear-gradient(135deg,#00b894,#55efc4);color:#063}
-  .icon-sms{background:linear-gradient(135deg,#0984e3,#74b9ff);color:#012}
-  .icon-taxi{background:linear-gradient(135deg,#fdcb6e,#e17055);color:#321}
-  .icon-dark{background:linear-gradient(135deg,#2d3436,#636e72);color:#ddd}
-  .icon-close{background:#2d3436;color:#aaa}
-  h2{font-size:18px;margin:4px 0 8px}
-  .back{font-size:13px;color:var(--accent);cursor:pointer;margin-bottom:6px}
-  input,textarea{
-    width:100%;background:#0e1119;border:1px solid var(--line);border-radius:12px;
-    padding:12px;color:var(--text);font-size:14px;outline:none;
-  }
-  textarea{min-height:80px;resize:none}
-  .btn{
-    background:var(--accent);border:none;color:#fff;border-radius:12px;padding:12px;
-    font-weight:600;cursor:pointer;width:100%;margin-top:6px;
-  }
-  .btn.green{background:var(--green)}
-  .btn.red{background:var(--red)}
-  .list{flex:1;overflow:auto;display:flex;flex-direction:column;gap:8px}
-  .item{
-    background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;
-    cursor:pointer;display:flex;justify-content:space-between;align-items:center;
-  }
-  .item small{color:var(--muted);font-size:11px}
-  .dock{
-    position:absolute;bottom:12px;left:50%;transform:translateX(-50%);
-    width:40%;height:5px;background:#3a4155;border-radius:4px;
-  }
-  .msg{font-size:13px;color:var(--muted);line-height:1.4}
+:root{--bg:#0a0c12;--card:#151a26;--line:rgba(255,255,255,.08);--text:#eef0f6;--muted:#8b93a7;
+--violet:#9b6bff;--green:#2ed573;--red:#ff6b81;--amber:#f5b942;--cyan:#4fd6d0}
+*{box-sizing:border-box;margin:0;padding:0;user-select:none;-webkit-tap-highlight-color:transparent}
+body{background:transparent;font-family:'Manrope',system-ui,sans-serif;color:var(--text);overflow:hidden}
+#wrap{width:100%;height:100vh;display:flex;align-items:center;justify-content:center}
+#phone{width:340px;height:680px;background:linear-gradient(165deg,#12151f 0%,#0a0c12 100%);
+border-radius:40px;border:3px solid #2a3144;position:relative;overflow:hidden;
+box-shadow:0 30px 80px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,255,255,.04)}
+.notch{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:110px;height:24px;background:#000;border-radius:14px;z-index:20}
+.status{padding:40px 20px 6px;display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-weight:700}
+.screen{height:calc(100% - 118px);position:relative;overflow:hidden}
+.page{position:absolute;inset:0;padding:10px 16px 8px;display:none;flex-direction:column;gap:10px}
+.page.active{display:flex}
+.hero{text-align:center;padding:18px 8px 8px}
+.hero h1{font-size:22px;font-weight:800;letter-spacing:.5px}
+.hero p{font-size:12px;color:var(--muted);margin-top:4px}
+.dark-card{background:linear-gradient(135deg,#1a1f2e,#12151f);border:1px solid var(--line);border-radius:18px;padding:16px;cursor:pointer;transition:.15s}
+.dark-card:hover{border-color:rgba(155,107,255,.45);transform:translateY(-1px)}
+.dark-card .t{font-weight:800;font-size:15px}
+.dark-card .d{font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.4}
+.dock-apps{margin-top:auto;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding-bottom:4px}
+.app{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 6px;text-align:center;cursor:pointer;transition:.15s}
+.app:hover{border-color:rgba(155,107,255,.4);transform:translateY(-2px)}
+.app .ic{width:48px;height:48px;margin:0 auto 6px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px}
+.app span{font-size:11px;font-weight:700;color:var(--muted)}
+.ic-call{background:linear-gradient(135deg,#00b894,#55efc4)}
+.ic-sms{background:linear-gradient(135deg,#0984e3,#74b9ff)}
+.ic-taxi{background:linear-gradient(135deg,#fdcb6e,#e17055)}
+h2{font-size:17px;font-weight:800}
+.back{font-size:13px;color:var(--violet);cursor:pointer;font-weight:700;margin-bottom:2px}
+input,textarea{width:100%;background:#0e1119;border:1px solid var(--line);border-radius:12px;padding:12px;color:var(--text);font-size:13.5px;outline:none;font-family:inherit}
+textarea{min-height:72px;resize:none}
+.btn{width:100%;border:none;border-radius:12px;padding:12px;font-weight:800;font-size:13.5px;cursor:pointer;margin-top:4px;color:#fff}
+.btn-v{background:linear-gradient(180deg,#a97bff,#8455f0)}
+.btn-g{background:linear-gradient(180deg,#2ed573,#1ea856)}
+.btn-r{background:linear-gradient(180deg,#ff7a8a,#e74c3c)}
+.btn-d{background:#2a2f3f;color:var(--muted)}
+.list{flex:1;overflow:auto;display:flex;flex-direction:column;gap:8px}
+.item{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;cursor:pointer}
+.item small{color:var(--muted);font-size:11px}
+.warn{background:rgba(255,84,112,.12);border:1px solid rgba(255,84,112,.35);border-radius:12px;padding:12px;font-size:12px;line-height:1.45;color:#ffb3bf}
+.msg{font-size:12.5px;color:var(--muted);line-height:1.45}
+.home-bar{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);width:36%;height:5px;background:#3a4155;border-radius:4px}
+.close-mini{position:absolute;top:42px;right:16px;width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,.06);
+border:1px solid var(--line);color:var(--muted);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;z-index:15}
 </style>
 </head>
 <body>
+<div id="wrap">
 <div id="phone">
   <div class="notch"></div>
+  <div class="close-mini" id="btn-x">✕</div>
   <div class="status"><span id="clock">12:00</span><span>IzPhone</span></div>
   <div class="screen">
-    <!-- HOME -->
+
     <div class="page active" id="page-home">
-      <div class="home-grid">
-        <div class="app" data-page="call"><div class="icon icon-call">📞</div><span>Звонки</span></div>
-        <div class="app" data-page="sms"><div class="icon icon-sms">💬</div><span>СМС</span></div>
-        <div class="app" data-page="taxi"><div class="icon icon-taxi">🚕</div><span>Такси</span></div>
-        <div class="app" data-page="dark"><div class="icon icon-dark">🕶</div><span>DarkIZ</span></div>
-        <div class="app" id="btn-close"><div class="icon icon-close">✕</div><span>Закрыть</span></div>
+      <div class="hero">
+        <h1>IzPhone</h1>
+        <p>P или /phone — открыть / закрыть</p>
       </div>
-      <p class="msg" style="margin-top:auto;text-align:center">P или /phone — закрыть</p>
+      <div class="dark-card" data-page="dark">
+        <div class="t">🕶  DarkIZ</div>
+        <div class="d">Анонимная сеть. Объявления и ЛС. Использование незаконно и может привести к тюрьме.</div>
+      </div>
+      <div class="dock-apps">
+        <div class="app" data-page="call"><div class="ic ic-call">📞</div><span>Звонки</span></div>
+        <div class="app" data-page="sms"><div class="ic ic-sms">💬</div><span>СМС</span></div>
+        <div class="app" data-page="taxi"><div class="ic ic-taxi">🚕</div><span>Такси</span></div>
+      </div>
     </div>
 
-    <!-- CALL -->
     <div class="page" id="page-call">
       <div class="back" data-back>← Назад</div>
       <h2>Звонок</h2>
-      <input id="call-number" placeholder="Номер или Nick_Name" maxlength="24"/>
-      <button class="btn green" id="btn-call">Позвонить</button>
-      <p class="msg">Также работает /call как раньше.</p>
+      <input id="call-number" placeholder="Номер телефона" maxlength="8"/>
+      <button class="btn btn-g" id="btn-call">Позвонить</button>
+      <p class="msg">Сервисы: наберите 911. Команда /call работает как раньше.</p>
     </div>
 
-    <!-- SMS -->
     <div class="page" id="page-sms">
       <div class="back" data-back>← Назад</div>
       <h2>Сообщения</h2>
       <div class="list" id="sms-list"></div>
-      <input id="sms-to" placeholder="Кому (номер / ник)" maxlength="24"/>
-      <textarea id="sms-text" placeholder="Текст сообщения" maxlength="120"></textarea>
-      <button class="btn" id="btn-sms">Отправить</button>
+      <input id="sms-to" placeholder="Номер получателя" maxlength="8"/>
+      <textarea id="sms-text" placeholder="Текст (до 64)" maxlength="64"></textarea>
+      <button class="btn btn-v" id="btn-sms">Отправить</button>
     </div>
 
-    <!-- SMS THREAD -->
     <div class="page" id="page-sms-thread">
-      <div class="back" data-back-sms>← К списку</div>
+      <div class="back" id="back-sms">← К списку</div>
       <h2 id="thread-title">Чат</h2>
       <div class="list" id="thread-list"></div>
     </div>
 
-    <!-- TAXI -->
     <div class="page" id="page-taxi">
       <div class="back" data-back>← Назад</div>
       <h2>Такси</h2>
-      <p class="msg">Вызвать такси на вашу текущую позицию.</p>
-      <button class="btn green" id="btn-taxi">Заказать такси</button>
+      <p class="msg">Опишите, где вы находитесь (6–20 символов). Запрос уйдёт таксистам на смене.</p>
+      <input id="taxi-place" placeholder="Например: у мэрии LS" maxlength="20"/>
+      <button class="btn btn-g" id="btn-taxi">Вызвать такси</button>
     </div>
 
-    <!-- DARKIZ -->
     <div class="page" id="page-dark">
       <div class="back" data-back>← Назад</div>
       <h2>DarkIZ</h2>
-      <p class="msg">Анонимная сеть. Никнейм, объявления, ЛС — скоро полностью. Сейчас открывает меню DarkIZ на сервере.</p>
-      <input id="dark-nick" placeholder="Левый ник (3-16)" maxlength="16"/>
-      <button class="btn" id="btn-dark-nick">Установить ник DarkIZ</button>
-      <button class="btn red" id="btn-dark-open">Открыть DarkIZ</button>
+      <div class="warn" id="dark-warn">
+        <b>Внимание!</b> DarkIZ — нелегальная сеть. Администрация и полиция могут использовать логи.
+        Регистрация и активность могут привести к <b>тюрьме / варнам</b> по РП-законам сервера.
+        Ваш DarkIZ-ник привязан к реальному аккаунту в базе данных.
+      </div>
+      <div id="dark-reg">
+        <p class="msg">Создайте анонимный ник (3–16, латиница/цифры/_)</p>
+        <input id="dark-nick" placeholder="dark_nick" maxlength="16"/>
+        <button class="btn btn-r" id="btn-dark-reg">Зарегистрироваться</button>
+      </div>
+      <div id="dark-main" style="display:none">
+        <p class="msg">Вы вошли как <b id="dark-me">—</b></p>
+        <button class="btn btn-v" id="btn-dark-ads">Объявления</button>
+        <button class="btn btn-v" id="btn-dark-pm">Написать ЛС</button>
+        <button class="btn btn-d" id="btn-dark-inbox">Входящие ЛС</button>
+      </div>
     </div>
+
+    <div class="page" id="page-dark-ads">
+      <div class="back" id="back-dark">← DarkIZ</div>
+      <h2>Объявления</h2>
+      <div class="list" id="ads-list"></div>
+      <input id="ad-title" placeholder="Заголовок" maxlength="40"/>
+      <textarea id="ad-body" placeholder="Текст" maxlength="180"></textarea>
+      <input id="ad-price" placeholder="Цена $" maxlength="9"/>
+      <button class="btn btn-r" id="btn-ad-post">Опубликовать</button>
+    </div>
+
+    <div class="page" id="page-dark-pm">
+      <div class="back" id="back-dark2">← DarkIZ</div>
+      <h2>DarkIZ ЛС</h2>
+      <input id="pm-to" placeholder="Ник DarkIZ получателя" maxlength="16"/>
+      <textarea id="pm-text" placeholder="Сообщение" maxlength="160"></textarea>
+      <button class="btn btn-r" id="btn-pm-send">Отправить</button>
+    </div>
+
+    <div class="page" id="page-dark-inbox">
+      <div class="back" id="back-dark3">← DarkIZ</div>
+      <h2>Входящие</h2>
+      <div class="list" id="inbox-list"></div>
+    </div>
+
   </div>
-  <div class="dock"></div>
+  <div class="home-bar"></div>
+</div>
 </div>
 <script>
-const bridge = window.cef || window.mp || {
-  emit: (e,...a)=>{ console.log('emit',e,a); if(window.skymp||window.invokeNative){} },
-  on: ()=>{}
+const bridge = (typeof cef !== 'undefined') ? cef : {
+  on(){}, emit(e,...a){ console.log('[phone mock]', e, a); }
 };
 function show(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
-document.querySelectorAll('.app[data-page]').forEach(el=>{
-  el.onclick=()=>show('page-'+el.dataset.page);
-});
+document.querySelectorAll('[data-page]').forEach(el=>el.onclick=()=>show('page-'+el.dataset.page));
 document.querySelectorAll('[data-back]').forEach(el=>el.onclick=()=>show('page-home'));
-document.getElementById('btn-close').onclick=()=>bridge.emit('phone:close');
+document.getElementById('back-sms').onclick=()=>show('page-sms');
+document.getElementById('back-dark').onclick=()=>show('page-dark');
+document.getElementById('back-dark2').onclick=()=>show('page-dark');
+document.getElementById('back-dark3').onclick=()=>show('page-dark');
+document.getElementById('btn-x').onclick=()=>bridge.emit('phone:close');
 document.getElementById('btn-call').onclick=()=>{
   const n=document.getElementById('call-number').value.trim();
   if(n) bridge.emit('phone:call', n);
 };
 document.getElementById('btn-sms').onclick=()=>{
   const to=document.getElementById('sms-to').value.trim();
-  const text=document.getElementById('sms-text').value.trim();
-  if(to&&text) bridge.emit('phone:sms', to, text);
+  const t=document.getElementById('sms-text').value.trim();
+  if(to&&t) bridge.emit('phone:sms', to, t);
 };
-document.getElementById('btn-taxi').onclick=()=>bridge.emit('phone:taxi');
-document.getElementById('btn-dark-nick').onclick=()=>{
+document.getElementById('btn-taxi').onclick=()=>{
+  const p=document.getElementById('taxi-place').value.trim();
+  if(p.length>=6) bridge.emit('phone:taxi', p);
+};
+document.getElementById('btn-dark-reg').onclick=()=>{
   const n=document.getElementById('dark-nick').value.trim();
-  if(n.length>=3) bridge.emit('phone:darknick', n);
+  if(n.length>=3) bridge.emit('phone:darkreg', n);
 };
-document.getElementById('btn-dark-open').onclick=()=>bridge.emit('phone:darkopen');
-
-function renderSms(list){
-  const box=document.getElementById('sms-list');
-  box.innerHTML='';
+document.getElementById('btn-dark-ads').onclick=()=>{ show('page-dark-ads'); bridge.emit('phone:darkads'); };
+document.getElementById('btn-dark-pm').onclick=()=>show('page-dark-pm');
+document.getElementById('btn-dark-inbox').onclick=()=>{ show('page-dark-inbox'); bridge.emit('phone:darkinbox'); };
+document.getElementById('btn-ad-post').onclick=()=>{
+  bridge.emit('phone:darkpost',
+    document.getElementById('ad-title').value.trim(),
+    document.getElementById('ad-body').value.trim(),
+    document.getElementById('ad-price').value.trim()||'0');
+};
+document.getElementById('btn-pm-send').onclick=()=>{
+  bridge.emit('phone:darkpm',
+    document.getElementById('pm-to').value.trim(),
+    document.getElementById('pm-text').value.trim());
+};
+function setDark(nick){
+  if(nick){
+    document.getElementById('dark-reg').style.display='none';
+    document.getElementById('dark-main').style.display='block';
+    document.getElementById('dark-me').textContent=nick;
+  } else {
+    document.getElementById('dark-reg').style.display='block';
+    document.getElementById('dark-main').style.display='none';
+  }
+}
+bridge.on && bridge.on('phone:darkstatus', (nick)=>setDark(nick||''));
+bridge.on && bridge.on('phone:smslist', (list)=>{
+  const box=document.getElementById('sms-list'); box.innerHTML='';
   (list||[]).forEach(c=>{
-    const d=document.createElement('div');
-    d.className='item';
+    const d=document.createElement('div'); d.className='item';
     d.innerHTML=`<div><b>${c.name||c.number}</b><br><small>${c.last||''}</small></div>`;
     d.onclick=()=>{
       document.getElementById('thread-title').textContent=c.name||c.number;
-      const tl=document.getElementById('thread-list');
-      tl.innerHTML='';
+      const tl=document.getElementById('thread-list'); tl.innerHTML='';
       (c.messages||[]).forEach(m=>{
-        const x=document.createElement('div');
-        x.className='item';
+        const x=document.createElement('div'); x.className='item';
         x.innerHTML=`<div>${m.text}<br><small>${m.time||''}</small></div>`;
         tl.appendChild(x);
       });
@@ -177,16 +231,26 @@ function renderSms(list){
     };
     box.appendChild(d);
   });
-}
-document.querySelectorAll('[data-back-sms]').forEach(el=>el.onclick=()=>show('page-sms'));
-if(bridge.on){
-  bridge.on('phone:smslist', renderSms);
-  bridge.on('phone:time', (t)=>{ document.getElementById('clock').textContent=t||''; });
-}
+});
+bridge.on && bridge.on('phone:adslist', (list)=>{
+  const box=document.getElementById('ads-list'); box.innerHTML='';
+  (list||[]).forEach(a=>{
+    const d=document.createElement('div'); d.className='item';
+    d.innerHTML=`<div><b>${a.title}</b> — ${a.price}$<br><small>${a.nick}: ${a.body}</small></div>`;
+    box.appendChild(d);
+  });
+});
+bridge.on && bridge.on('phone:inbox', (list)=>{
+  const box=document.getElementById('inbox-list'); box.innerHTML='';
+  (list||[]).forEach(m=>{
+    const d=document.createElement('div'); d.className='item';
+    d.innerHTML=`<div><b>${m.from}</b><br><small>${m.text}</small></div>`;
+    box.appendChild(d);
+  });
+});
 setInterval(()=>{
   const d=new Date();
-  document.getElementById('clock').textContent=
-    String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+  document.getElementById('clock').textContent=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
 },1000);
 </script>
 </body>
