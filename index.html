@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IZZEENITY — Донат</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0a0c12;
+    --bg-soft: #0e1119;
+    --panel: #12151f;
+    --card: #161a26;
+    --card-hover: #1c2130;
+    --border: rgba(255,255,255,0.07);
+    --border-soft: rgba(255,255,255,0.04);
+    --text: #eef0f6;
+    --text-muted: #8890a4;
+    --text-dim: #5c6478;
+    --violet: #9b6bff;
+    --violet-soft: rgba(155,107,255,0.14);
+    --amber: #f5b942;
+    --amber-soft: rgba(245,185,66,0.14);
+    --cyan: #4fd6d0;
+    --danger: #ff5470;
+    --danger-soft: rgba(255,84,112,0.14);
+    --radius: 14px;
+    --radius-sm: 9px;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+
+  html,body{
+    width:100%; height:100%;
+    background:transparent;
+    font-family:'Manrope', sans-serif;
+    color:var(--text);
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+    user-select:none;
+  }
+
+  ::selection{ background:var(--violet); color:#fff; }
+
+  /* scrollbars */
+  *::-webkit-scrollbar{ width:8px; height:8px; }
+  *::-webkit-scrollbar-track{ background:transparent; }
+  *::-webkit-scrollbar-thumb{ background:#2a2f3f; border-radius:8px; }
+  *::-webkit-scrollbar-thumb:hover{ background:#383f54; }
+
+  /* ---------- backdrop ---------- */
+  #backdrop{
+    position:fixed; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    background:radial-gradient(ellipse at 50% 20%, rgba(120,80,220,0.10), transparent 60%),
+               rgba(3,4,7,0.55);
+    backdrop-filter: blur(6px);
+    opacity:0; pointer-events:none;
+    transition:opacity .25s ease;
+    z-index:10;
+  }
+  #backdrop.visible{ opacity:1; pointer-events:auto; }
+
+  /* ---------- shell ---------- */
+  #shell{
+    position:relative;
+    width:min(1040px, 94vw);
+    height:min(660px, 88vh);
+    background:linear-gradient(180deg, var(--panel), var(--bg));
+    border:1px solid var(--border);
+    border-radius:20px;
+    box-shadow:0 30px 90px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.02) inset;
+    display:flex; flex-direction:column;
+    overflow:hidden;
+    transform:translateY(18px) scale(.985);
+    opacity:0;
+    transition:transform .32s cubic-bezier(.2,.8,.2,1), opacity .32s ease;
+  }
+  #backdrop.visible #shell{ transform:translateY(0) scale(1); opacity:1; }
+
+  /* faint film-grain / scanline texture for the "night city" signature feel */
+  #shell::before{
+    content:"";
+    position:absolute; inset:0;
+    pointer-events:none;
+    background-image:repeating-linear-gradient(0deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 3px);
+    mix-blend-mode:overlay;
+    z-index:5;
+  }
+
+  /* ---------- header ---------- */
+  header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 24px;
+    border-bottom:1px solid var(--border-soft);
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    flex-shrink:0;
+  }
+  .brand{ display:flex; align-items:baseline; gap:10px; }
+  .brand .logo{
+    font-family:'Bebas Neue', sans-serif;
+    font-size:30px; letter-spacing:2px;
+    color:#fff;
+    text-shadow:0 0 12px rgba(155,107,255,0.65), 0 0 30px rgba(155,107,255,0.25);
+    animation:flicker 6s infinite;
+  }
+  .brand .logo span{ color:var(--violet); }
+  .brand .tag{
+    font-size:11px; letter-spacing:2.5px; text-transform:uppercase;
+    color:var(--text-dim); font-weight:700;
+  }
+  @keyframes flicker{
+    0%,19%,21%,23%,80%,100%{ opacity:1; }
+    20%,22%{ opacity:.72; }
+  }
+
+  .header-right{ display:flex; align-items:center; gap:14px; }
+
+  .balance{
+    display:flex; align-items:center; gap:8px;
+    background:var(--amber-soft);
+    border:1px solid rgba(245,185,66,0.3);
+    padding:8px 14px;
+    border-radius:999px;
+  }
+  .balance .coin{
+    width:18px; height:18px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #ffe9b0, var(--amber) 60%, #b9822a);
+    box-shadow:0 0 8px rgba(245,185,66,0.6);
+    flex-shrink:0;
+  }
+  .balance b{ font-size:15px; font-weight:800; color:#ffd98a; letter-spacing:.3px; }
+  .balance span{ font-size:11px; color:var(--text-dim); margin-left:2px; }
+
+  .icon-btn{
+    width:34px; height:34px; border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(255,255,255,0.04);
+    border:1px solid var(--border);
+    color:var(--text-muted);
+    cursor:pointer;
+    transition:.15s;
+  }
+  .icon-btn:hover{ background:var(--danger-soft); border-color:rgba(255,84,112,.4); color:#ff8fa3; }
+
+  /* ---------- body layout ---------- */
+  .body{ flex:1; display:flex; min-height:0; }
+
+  nav.categories{
+    width:190px; flex-shrink:0;
+    border-right:1px solid var(--border-soft);
+    padding:16px 12px;
+    display:flex; flex-direction:column; gap:4px;
+    overflow-y:auto;
+  }
+  .cat-btn{
+    display:flex; align-items:center; gap:10px;
+    padding:11px 12px;
+    border-radius:var(--radius-sm);
+    color:var(--text-muted);
+    font-size:13.5px; font-weight:700;
+    cursor:pointer;
+    border:1px solid transparent;
+    transition:.15s;
+    letter-spacing:.2px;
+  }
+  .cat-btn .ic{ width:17px; height:17px; flex-shrink:0; opacity:.8; }
+  .cat-btn:hover{ background:rgba(255,255,255,0.035); color:var(--text); }
+  .cat-btn.active{
+    background:var(--violet-soft);
+    border-color:rgba(155,107,255,0.35);
+    color:#d7c6ff;
+  }
+  .cat-btn.active .ic{ opacity:1; }
+  .cat-count{
+    margin-left:auto; font-size:10.5px; font-weight:800;
+    color:var(--text-dim); background:rgba(255,255,255,0.05);
+    padding:1px 7px; border-radius:999px;
+  }
+  .cat-btn.active .cat-count{ color:#d7c6ff; background:rgba(155,107,255,0.22); }
+
+  nav.categories .divider{ height:1px; background:var(--border-soft); margin:8px 4px; }
+
+  main.content{
+    flex:1; min-width:0; display:flex; flex-direction:column;
+    padding:18px 22px; overflow:hidden;
+  }
+
+  .content-top{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:14px; gap:12px; flex-shrink:0;
+  }
+  .content-title{
+    font-family:'Bebas Neue', sans-serif;
+    font-size:22px; letter-spacing:1px; color:#fff;
+  }
+  .content-sub{ font-size:12px; color:var(--text-dim); margin-top:2px; font-weight:600; }
+
+  .search{
+    display:flex; align-items:center; gap:8px;
+    background:rgba(255,255,255,0.035);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:8px 12px;
+    width:220px;
+  }
+  .search input{
+    background:none; border:none; outline:none;
+    color:var(--text); font-size:13px; width:100%;
+    font-family:'Manrope', sans-serif;
+  }
+  .search input::placeholder{ color:var(--text-dim); }
+  .search svg{ flex-shrink:0; opacity:.55; }
+
+  .scroll-area{ flex:1; overflow-y:auto; padding-right:4px; padding-bottom:6px; }
+
+  /* ---------- grid cards (skins / cars / accessories) ---------- */
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(200px, 1fr));
+    gap:14px;
+  }
+
+  .card{
+    position:relative;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    overflow:hidden;
+    display:flex; flex-direction:column;
+    transition:.18s ease;
+    cursor:default;
+  }
+  .card:hover{ background:var(--card-hover); border-color:rgba(155,107,255,0.28); transform:translateY(-2px); }
+
+  .card .thumb{
+    width:100%; aspect-ratio:4/2.7;
+    background:#0d0f17;
+    position:relative;
+    overflow:hidden;
+  }
+  .card .thumb img{
+    width:100%; height:100%; object-fit:cover; display:block;
+    transition:transform .3s ease;
+  }
+  .card:hover .thumb img{ transform:scale(1.05); }
+  .card .thumb .fallback{
+    width:100%; height:100%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Bebas Neue', sans-serif;
+    font-size:15px; letter-spacing:1px; color:var(--text-dim);
+    background:
+      repeating-linear-gradient(135deg, rgba(255,255,255,0.03) 0 10px, transparent 10px 20px),
+      linear-gradient(160deg, #171b28, #0c0e15);
+    text-align:center; padding:10px;
+  }
+  .badge{
+    position:absolute; top:8px; left:8px;
+    background:rgba(10,12,18,0.75);
+    border:1px solid rgba(255,255,255,0.12);
+    color:var(--cyan);
+    font-size:10px; font-weight:800; letter-spacing:.4px;
+    padding:3px 8px; border-radius:999px;
+    backdrop-filter:blur(3px);
+  }
+
+  .card .info{ padding:12px 12px 13px; display:flex; flex-direction:column; gap:8px; flex:1; }
+  .card .name{ font-size:14px; font-weight:800; color:var(--text); line-height:1.25; }
+  .card .desc{ font-size:11.5px; color:var(--text-dim); line-height:1.4; }
+
+  .card .row{ display:flex; align-items:center; justify-content:space-between; margin-top:auto; gap:8px; }
+  .price{ display:flex; align-items:center; gap:6px; font-family:'Bebas Neue', sans-serif; font-size:17px; color:#ffd98a; letter-spacing:.5px; }
+  .price .coin{ width:14px; height:14px; border-radius:50%; background:radial-gradient(circle at 35% 30%, #ffe9b0, var(--amber) 60%, #b9822a); flex-shrink:0; }
+
+  .buy-btn{
+    background:linear-gradient(180deg, #a97bff, #8455f0);
+    color:#fff; border:none; border-radius:9px;
+    padding:8px 14px; font-size:12.5px; font-weight:800;
+    letter-spacing:.3px; cursor:pointer;
+    box-shadow:0 4px 14px rgba(139,85,240,0.35);
+    transition:.15s;
+    white-space:nowrap;
+  }
+  .buy-btn:hover{ filter:brightness(1.08); transform:translateY(-1px); }
+  .buy-btn:active{ transform:translateY(0); }
+  .buy-btn[disabled]{ opacity:.5; cursor:not-allowed; filter:none; transform:none; }
+
+  /* ---------- list rows (services / other, no image) ---------- */
+  .list{ display:flex; flex-direction:column; gap:10px; }
+  .row-item{
+    display:flex; align-items:center; gap:14px;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:13px 16px;
+    transition:.15s;
+  }
+  .row-item:hover{ background:var(--card-hover); border-color:rgba(155,107,255,0.28); }
+  .row-item .ic-wrap{
+    width:42px; height:42px; border-radius:11px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--violet-soft);
+    color:#c8b3ff;
+  }
+  .row-item .body-txt{ flex:1; min-width:0; }
+  .row-item .name{ font-size:14px; font-weight:800; }
+  .row-item .desc{ font-size:11.5px; color:var(--text-dim); margin-top:2px; }
+  .row-item .row-right{ display:flex; align-items:center; gap:14px; flex-shrink:0; }
+
+  .empty{
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    height:100%; color:var(--text-dim); gap:8px; text-align:center;
+  }
+  .empty svg{ opacity:.35; margin-bottom:4px; }
+  .empty b{ color:var(--text-muted); font-size:13px; }
+
+  /* ---------- confirm modal ---------- */
+  #confirm-layer{
+    position:absolute; inset:0;
+    background:rgba(4,5,9,0.6);
+    backdrop-filter:blur(3px);
+    display:flex; align-items:center; justify-content:center;
+    opacity:0; pointer-events:none;
+    transition:opacity .18s ease;
+    z-index:20;
+  }
+  #confirm-layer.visible{ opacity:1; pointer-events:auto; }
+
+  .confirm-box{
+    width:360px;
+    background:linear-gradient(180deg, #161a26, #0f121b);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:20px;
+    box-shadow:0 20px 60px rgba(0,0,0,.5);
+    transform:scale(.96) translateY(6px);
+    transition:transform .18s ease;
+  }
+  #confirm-layer.visible .confirm-box{ transform:scale(1) translateY(0); }
+
+  .confirm-box .ctitle{ font-family:'Bebas Neue', sans-serif; font-size:19px; letter-spacing:.5px; margin-bottom:2px; }
+  .confirm-box .csub{ font-size:12px; color:var(--text-dim); margin-bottom:14px; }
+
+  .confirm-item{
+    display:flex; align-items:center; gap:12px;
+    background:rgba(255,255,255,0.03);
+    border:1px solid var(--border-soft);
+    border-radius:11px; padding:10px; margin-bottom:14px;
+  }
+  .confirm-item .thumb{ width:56px; height:44px; border-radius:8px; overflow:hidden; flex-shrink:0; background:#0d0f17; }
+  .confirm-item .thumb img{ width:100%; height:100%; object-fit:cover; }
+  .confirm-item .meta .name{ font-size:13.5px; font-weight:800; }
+  .confirm-item .meta .price{ font-size:15px; margin-top:2px; }
+
+  .input-group{ margin-bottom:14px; }
+  .input-group label{ display:block; font-size:11.5px; font-weight:700; color:var(--text-muted); margin-bottom:6px; letter-spacing:.2px; }
+  .input-group input{
+    width:100%; background:rgba(255,255,255,0.045);
+    border:1px solid var(--border); border-radius:9px;
+    padding:10px 12px; color:var(--text); font-size:13.5px;
+    outline:none; font-family:'Manrope', sans-serif;
+    transition:.15s;
+  }
+  .input-group input:focus{ border-color:rgba(155,107,255,.55); background:rgba(155,107,255,0.06); }
+  .input-hint{ font-size:10.5px; color:var(--text-dim); margin-top:5px; }
+  .input-hint.error{ color:var(--danger); }
+
+  .confirm-actions{ display:flex; gap:8px; }
+  .btn{
+    flex:1; padding:11px; border-radius:10px; border:none;
+    font-size:13px; font-weight:800; cursor:pointer; transition:.15s;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+  }
+  .btn-cancel{ background:rgba(255,255,255,0.05); color:var(--text-muted); border:1px solid var(--border); }
+  .btn-cancel:hover{ background:rgba(255,255,255,0.09); color:var(--text); }
+  .btn-confirm{ background:linear-gradient(180deg, #a97bff, #8455f0); color:#fff; box-shadow:0 4px 14px rgba(139,85,240,0.35); }
+  .btn-confirm:hover{ filter:brightness(1.08); }
+  .btn-confirm[disabled]{ opacity:.5; cursor:not-allowed; filter:none; }
+
+  .spinner{
+    width:14px; height:14px; border-radius:50%;
+    border:2px solid rgba(255,255,255,0.35); border-top-color:#fff;
+    animation:spin .7s linear infinite;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  /* ---------- toasts ---------- */
+  #toasts{
+    position:absolute; right:18px; bottom:18px;
+    display:flex; flex-direction:column; gap:8px; z-index:30;
+    width:280px;
+  }
+  .toast{
+    background:#151926; border:1px solid var(--border);
+    border-left:3px solid var(--violet);
+    border-radius:10px; padding:11px 13px;
+    font-size:12.5px; font-weight:600; color:var(--text);
+    box-shadow:0 10px 30px rgba(0,0,0,.4);
+    animation:toast-in .22s ease;
+    display:flex; gap:9px; align-items:flex-start;
+  }
+  .toast.success{ border-left-color:var(--cyan); }
+  .toast.error{ border-left-color:var(--danger); }
+  .toast b{ display:block; margin-bottom:2px; }
+  .toast.success b{ color:var(--cyan); }
+  .toast.error b{ color:#ff8fa3; }
+  @keyframes toast-in{ from{ opacity:0; transform:translateX(16px); } to{ opacity:1; transform:translateX(0); } }
+
+  @media (max-width: 720px){
+    nav.categories{ width:150px; }
+    .grid{ grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); }
+  }
+</style>
+</head>
+<body>
+
+<div id="backdrop">
+  <div id="shell">
+
+    <header>
+      <div class="brand">
+        <div class="logo">IZZEE<span>NITY</span></div>
+        <div class="tag">Донат&nbsp;магазин</div>
+      </div>
+      <div class="header-right">
+        <div class="balance">
+          <div class="coin"></div>
+          <b id="balance-value">0</b>
+          <span>coins</span>
+        </div>
+        <div class="icon-btn" id="close-btn" title="Закрыть (ESC)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </div>
+      </div>
+    </header>
+
+    <div class="body">
+      <nav class="categories" id="categories"></nav>
+
+      <main class="content">
+        <div class="content-top">
+          <div>
+            <div class="content-title" id="content-title">Скины</div>
+            <div class="content-sub" id="content-sub">Внешний вид персонажа</div>
+          </div>
+          <div class="search">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
+            <input type="text" id="search-input" placeholder="Поиск...">
+          </div>
+        </div>
+
+        <div class="scroll-area">
+          <div id="items-container"></div>
+        </div>
+      </main>
+    </div>
+
+    <!-- confirmation modal -->
+    <div id="confirm-layer">
+      <div class="confirm-box">
+        <div class="ctitle" id="c-title">Подтверждение покупки</div>
+        <div class="csub">Проверьте детали перед оплатой</div>
+
+        <div class="confirm-item">
+          <div class="thumb" id="c-thumb-wrap"><img id="c-thumb" src="" alt=""></div>
+          <div class="meta">
+            <div class="name" id="c-name">—</div>
+            <div class="price"><div class="coin" style="display:inline-block;width:12px;height:12px;vertical-align:middle;margin-right:4px;"></div><span id="c-price">0</span></div>
+          </div>
+        </div>
+
+        <div class="input-group" id="c-input-group" style="display:none;">
+          <label id="c-input-label">Значение</label>
+          <input type="text" id="c-input" placeholder="">
+          <div class="input-hint" id="c-input-hint"></div>
+        </div>
+
+        <div class="confirm-actions">
+          <button class="btn btn-cancel" id="c-cancel">Отмена</button>
+          <button class="btn btn-confirm" id="c-confirm">Купить</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="toasts"></div>
+
+  </div>
+</div>
+
+<script>
+/* ============================================================================
+   IZZEENITY DONATE — CEF interface
+   Единый файл. Данные товаров задаются в ITEMS ниже — редактируйте свободно.
+   ============================================================================ */
+
+/* ---------------------------------------------------------------------------
+   1) ДАННЫЕ МАГАЗИНА
+   image  — задавайте ТОЛЬКО для категорий cars / skins / accessories.
+            Разместите свои картинки в /public/images/... на Vercel и укажите
+            путь вида "/images/cars/audi.png", либо полный https-URL.
+   requiresInput — если true, при покупке появится текстовое поле
+            (например для смены ника нужно ввести новый ник).
+--------------------------------------------------------------------------- */
+const CATEGORIES = [
+  { id:'skins',       label:'Скины',       sub:'Внешний вид персонажа',                icon:'user'   },
+  { id:'cars',        label:'Машины',      sub:'Донат-транспорт',                      icon:'car'    },
+  { id:'accessories', label:'Аксессуары',  sub:'Часы, цепи, очки и другое',            icon:'gem'    },
+  { id:'services',    label:'Услуги',      sub:'VIP-статусы и разовые услуги',         icon:'star'   },
+];
+
+const ITEMS = [
+  // ---------- SKINS ----------
+  {
+    id:'skin_business', category:'skins', name:'Бизнесмен',
+    desc:'Премиум-скин для ролки в оргах',
+    price:250,
+    image:'https://placehold.co/400x270/171b28/8b93a7?text=Skin+Preview'
+  },
+  {
+    id:'skin_double_salary', category:'skins', name:'Скин «x2 Зарплата»',
+    desc:'Даёт x2 к зарплате в организации',
+    price:700,
+    badge:'x2 ЗП',
+    image:'https://placehold.co/400x270/171b28/8b93a7?text=Skin+x2+Salary'
+  },
+  {
+    id:'skin_street', category:'skins', name:'Уличный стиль',
+    desc:'Повседневный уникальный образ',
+    price:180,
+    image:'https://placehold.co/400x270/171b28/8b93a7?text=Skin+Preview'
+  },
+
+  // ---------- CARS ----------
+  {
+    id:'car_audi', category:'cars', name:'Audi',
+    desc:'Донат-автомобиль, уникальный тюнинг',
+    price:500,
+    image:'https://placehold.co/400x270/171b28/8b93a7?text=Audi'
+  },
+  {
+    id:'car_bmw', category:'cars', name:'BMW M5',
+    desc:'Спорт-седан премиум класса',
+    price:650,
+    image:'https://placehold.co/400x270/171b28/8b93a7?text=BMW+M5'
+  },
+  {
+    id:'car_mercedes', category:'cars', name:'Mercedes-Benz',
+    desc:'Классика для авторитетных ролей',
+    price:800,
+    image:'https://placehold.co/400x270/171b28/8b93a7?text=Mercedes'
+  },
+
+  // ---------- ACCESSORIES ----------
+  {
+    id:'acc_chain', category:'accessories', name:'Золотая цепь',
+    desc:'Аксессуар на шею',
+    price:120,
+    image:'https://placehold.co/400x270/171b28/8b93a7?text=Chain'
+  },
+  {
+    id:'acc_watch', category:'accessories', name:'Часы Rolex',
+    desc:'Премиум-аксессуар на руку',
+    price:220,
+    image:'https://placehold.co/400x270/171b28/8b93a7?text=Watch'
+  },
+  {
+    id:'acc_glasses', category:'accessories', name:'Очки Ray-Ban',
+    desc:'Стильный аксессуар на лицо',
+    price:90,
+    image:'https://placehold.co/400x270/171b28/8b93a7?text=Glasses'
+  },
+
+  // ---------- SERVICES (без картинок — только название и покупка) ----------
+  {
+    id:'srv_nickname', category:'services', name:'Смена ника',
+    desc:'Установить новый игровой ник персонажу',
+    price:300,
+    requiresInput:true,
+    inputLabel:'Новый ник',
+    inputPlaceholder:'Имя_Фамилия',
+    inputPattern:/^[A-Z][a-z]+_[A-Z][a-z]+$/,
+    inputHint:'Формат: Имя_Фамилия, латиницей'
+  },
+  {
+    id:'srv_vip_bronze', category:'services', name:'VIP Bronze',
+    desc:'Базовый донат-статус на 30 дней',
+    price:150
+  },
+  {
+    id:'srv_vip_gold', category:'services', name:'VIP Gold',
+    desc:'Расширенный донат-статус на 30 дней',
+    price:400
+  },
+  {
+    id:'srv_gender', category:'services', name:'Смена пола',
+    desc:'Изменить пол персонажа',
+    price:150
+  },
+  {
+    id:'srv_house_slot', category:'services', name:'Доп. слот дома',
+    desc:'Дополнительный слот под недвижимость',
+    price:350
+  },
+];
+
+/* ---------------------------------------------------------------------------
+   2) МОСТ К ИГРЕ (samp-cef)
+   На стороне Pawn:  cef_subscribe("donate:buy", "OnDonateBuy") ...
+   Здесь мы просто вызываем cef.emit(...) и слушаем cef.on(...).
+   Если страница открыта вне игры (например, для превью на Vercel в обычном
+   браузере), автоматически включается ЛОКАЛЬНАЯ ЗАГЛУШКА — она даёт демо-баланс
+   и "подтверждает" покупки через 700мс, чтобы можно было проверить вёрстку.
+--------------------------------------------------------------------------- */
+let bridge;
+if (typeof cef !== 'undefined') {
+  bridge = cef;
+} else {
+  console.warn('[IZZEENITY] cef API не найден — включена локальная заглушка для превью.');
+  const handlers = {};
+  bridge = {
+    on(event, cb){ handlers[event] = cb; },
+    emit(event, ...args){
+      console.log('[MOCK cef.emit]', event, args);
+      if (event === 'donate:buy') {
+        const [itemId, extra] = args;
+        setTimeout(() => {
+          handlers['donate:response'] && handlers['donate:response'](true, 'Покупка успешна (демо-режим)', itemId);
+        }, 700);
+      }
+      if (event === 'donate:close') {
+        // no-op in preview
+      }
+    }
+  };
+  // демо-инициализация после загрузки
+  window.addEventListener('load', () => {
+    setTimeout(() => handlers['donate:init'] && handlers['donate:init'](12500, 'Player_Demo'), 50);
+  });
+}
+
+/* ---------------------------------------------------------------------------
+   3) СОСТОЯНИЕ
+--------------------------------------------------------------------------- */
+const state = {
+  balance: 0,
+  activeCategory: 'skins',
+  search: '',
+  pendingItem: null,
+};
+
+/* ---------------------------------------------------------------------------
+   4) ИКОНКИ (inline svg, без внешних зависимостей)
+--------------------------------------------------------------------------- */
+const ICONS = {
+  user:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>',
+  car:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 13l1.5-5A2 2 0 0 1 6.4 6.5h11.2A2 2 0 0 1 19.5 8L21 13"/><rect x="2.5" y="13" width="19" height="5" rx="1.5"/><circle cx="7" cy="18.5" r="1.6"/><circle cx="17" cy="18.5" r="1.6"/></svg>',
+  gem:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12l3 6-9 12L3 9z"/><path d="M3 9h18M9 3l3 6 3-6M12 9l-3 12M12 9l3 12"/></svg>',
+  star:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.6 6.1 20.6l1.3-6.6-4.9-4.6 6.6-.8z"/></svg>',
+};
+
+/* ---------------------------------------------------------------------------
+   5) РЕНДЕР
+--------------------------------------------------------------------------- */
+function fmt(n){ return n.toLocaleString('ru-RU'); }
+
+function renderCategories(){
+  const nav = document.getElementById('categories');
+  nav.innerHTML = CATEGORIES.map(cat => {
+    const count = ITEMS.filter(i => i.category === cat.id).length;
+    return `
+      <div class="cat-btn ${cat.id===state.activeCategory?'active':''}" data-cat="${cat.id}">
+        <span class="ic">${ICONS[cat.icon]}</span>
+        <span>${cat.label}</span>
+        <span class="cat-count">${count}</span>
+      </div>`;
+  }).join('');
+
+  nav.querySelectorAll('.cat-btn').forEach(el => {
+    el.addEventListener('click', () => {
+      state.activeCategory = el.dataset.cat;
+      state.search = '';
+      document.getElementById('search-input').value = '';
+      renderCategories();
+      renderItems();
+    });
+  });
+}
+
+function renderItems(){
+  const cat = CATEGORIES.find(c => c.id === state.activeCategory);
+  document.getElementById('content-title').textContent = cat.label;
+  document.getElementById('content-sub').textContent = cat.sub;
+
+  const q = state.search.trim().toLowerCase();
+  const list = ITEMS.filter(i => i.category === state.activeCategory &&
+    (!q || i.name.toLowerCase().includes(q) || (i.desc||'').toLowerCase().includes(q)));
+
+  const container = document.getElementById('items-container');
+
+  if (!list.length){
+    container.innerHTML = `
+      <div class="empty">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
+        <b>Ничего не найдено</b>
+        <span>Попробуйте другой запрос</span>
+      </div>`;
+    return;
+  }
+
+  const hasImages = state.activeCategory !== 'services';
+
+  if (hasImages){
+    container.innerHTML = `<div class="grid">${list.map(cardHTML).join('')}</div>`;
+  } else {
+    container.innerHTML = `<div class="list">${list.map(rowHTML).join('')}</div>`;
+  }
+
+  container.querySelectorAll('[data-buy]').forEach(btn => {
+    btn.addEventListener('click', () => openConfirm(btn.dataset.buy));
+  });
+}
+
+function cardHTML(item){
+  return `
+    <div class="card">
+      <div class="thumb">
+        ${item.badge ? `<div class="badge">${item.badge}</div>` : ''}
+        <img src="${item.image}" alt="${item.name}"
+             onerror="this.style.display='none'; this.parentElement.querySelector('.fallback').style.display='flex';">
+        <div class="fallback" style="display:none;">${item.name}</div>
+      </div>
+      <div class="info">
+        <div class="name">${item.name}</div>
+        <div class="desc">${item.desc || ''}</div>
+        <div class="row">
+          <div class="price"><div class="coin"></div>${fmt(item.price)}</div>
+          <button class="buy-btn" data-buy="${item.id}">Купить</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function rowHTML(item){
+  return `
+    <div class="row-item">
+      <div class="ic-wrap">${ICONS.star}</div>
+      <div class="body-txt">
+        <div class="name">${item.name}</div>
+        <div class="desc">${item.desc || ''}</div>
+      </div>
+      <div class="row-right">
+        <div class="price"><div class="coin"></div>${fmt(item.price)}</div>
+        <button class="buy-btn" data-buy="${item.id}">Купить</button>
+      </div>
+    </div>`;
+}
+
+/* ---------------------------------------------------------------------------
+   6) МОДАЛКА ПОДТВЕРЖДЕНИЯ ПОКУПКИ
+--------------------------------------------------------------------------- */
+function openConfirm(itemId){
+  const item = ITEMS.find(i => i.id === itemId);
+  if (!item) return;
+  state.pendingItem = item;
+
+  document.getElementById('c-name').textContent = item.name;
+  document.getElementById('c-price').textContent = fmt(item.price);
+
+  const thumbWrap = document.getElementById('c-thumb-wrap');
+  const thumbImg = document.getElementById('c-thumb');
+  if (item.image){
+    thumbWrap.style.display = 'block';
+    thumbImg.src = item.image;
+  } else {
+    thumbWrap.style.display = 'none';
+  }
+
+  const group = document.getElementById('c-input-group');
+  const input = document.getElementById('c-input');
+  const hint = document.getElementById('c-input-hint');
+  const confirmBtn = document.getElementById('c-confirm');
+
+  if (item.requiresInput){
+    group.style.display = 'block';
+    document.getElementById('c-input-label').textContent = item.inputLabel || 'Значение';
+    input.placeholder = item.inputPlaceholder || '';
+    input.value = '';
+    hint.textContent = item.inputHint || '';
+    hint.classList.remove('error');
+    confirmBtn.disabled = true;
+    setTimeout(() => input.focus(), 150);
+  } else {
+    group.style.display = 'none';
+    confirmBtn.disabled = false;
+  }
+
+  confirmBtn.innerHTML = 'Купить';
+  document.getElementById('confirm-layer').classList.add('visible');
+}
+
+function closeConfirm(){
+  document.getElementById('confirm-layer').classList.remove('visible');
+  state.pendingItem = null;
+}
+
+function validateInput(){
+  const item = state.pendingItem;
+  if (!item || !item.requiresInput) return true;
+  const input = document.getElementById('c-input');
+  const hint = document.getElementById('c-input-hint');
+  const confirmBtn = document.getElementById('c-confirm');
+  const val = input.value.trim();
+
+  let valid = val.length > 0;
+  if (valid && item.inputPattern) valid = item.inputPattern.test(val);
+
+  confirmBtn.disabled = !valid;
+  hint.classList.toggle('error', val.length > 0 && !valid);
+  hint.textContent = (val.length > 0 && !valid)
+    ? 'Неверный формат — ' + (item.inputHint || '')
+    : (item.inputHint || '');
+  return valid;
+}
+
+function submitPurchase(){
+  const item = state.pendingItem;
+  if (!item) return;
+
+  if (item.requiresInput && !validateInput()) return;
+
+  const extraValue = item.requiresInput ? document.getElementById('c-input').value.trim() : '';
+  const confirmBtn = document.getElementById('c-confirm');
+  confirmBtn.disabled = true;
+  confirmBtn.innerHTML = '<span class="spinner"></span>';
+
+  // Отправляем событие в игру. Сервер обязан САМ проверить цену и баланс —
+  // клиент используется только как интерфейс, а не источник истины.
+  bridge.emit('donate:buy', item.id, extraValue);
+}
+
+document.getElementById('c-cancel').addEventListener('click', closeConfirm);
+document.getElementById('c-confirm').addEventListener('click', submitPurchase);
+document.getElementById('c-input').addEventListener('input', validateInput);
+document.getElementById('confirm-layer').addEventListener('click', e => {
+  if (e.target.id === 'confirm-layer') closeConfirm();
+});
+
+/* ---------------------------------------------------------------------------
+   7) TOASTS
+--------------------------------------------------------------------------- */
+function toast(type, title, text){
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.innerHTML = `<div><b>${title}</b>${text || ''}</div>`;
+  const holder = document.getElementById('toasts');
+  holder.appendChild(el);
+  setTimeout(() => {
+    el.style.transition = 'opacity .25s ease, transform .25s ease';
+    el.style.opacity = '0';
+    el.style.transform = 'translateX(16px)';
+    setTimeout(() => el.remove(), 250);
+  }, 3200);
+}
+
+/* ---------------------------------------------------------------------------
+   8) СОБЫТИЯ ОТ ИГРЫ (сервера)
+--------------------------------------------------------------------------- */
+
+// вызывается при открытии /donate: cef_emit_event(playerid, "donate:init", coins, nickname)
+bridge.on('donate:init', (coins, nickname) => {
+  state.balance = coins || 0;
+  document.getElementById('balance-value').textContent = fmt(state.balance);
+  document.getElementById('backdrop').classList.add('visible');
+});
+
+// ответ сервера на покупку: cef_emit_event(playerid, "donate:response", success, message, itemId, newBalance)
+bridge.on('donate:response', (success, message, itemId, newBalance) => {
+  const confirmBtn = document.getElementById('c-confirm');
+
+  if (success){
+    if (typeof newBalance === 'number') {
+      state.balance = newBalance;
+      document.getElementById('balance-value').textContent = fmt(state.balance);
+    }
+    toast('success', 'Покупка успешна', message ? (' — ' + message) : '');
+    closeConfirm();
+  } else {
+    toast('error', 'Не удалось купить', message ? (' — ' + message) : '');
+    confirmBtn.disabled = false;
+    confirmBtn.innerHTML = 'Купить';
+  }
+});
+
+// на случай если баланс обновится извне (например после других покупок в игре)
+bridge.on('donate:balance', (coins) => {
+  state.balance = coins || 0;
+  document.getElementById('balance-value').textContent = fmt(state.balance);
+});
+
+/* ---------------------------------------------------------------------------
+   9) ЗАКРЫТИЕ / ПОИСК / ГОРЯЧИЕ КЛАВИШИ
+--------------------------------------------------------------------------- */
+function closeShop(){
+  document.getElementById('backdrop').classList.remove('visible');
+  closeConfirm();
+  bridge.emit('donate:close');
+}
+
+document.getElementById('close-btn').addEventListener('click', closeShop);
+
+document.getElementById('search-input').addEventListener('input', (e) => {
+  state.search = e.target.value;
+  renderItems();
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape'){
+    if (document.getElementById('confirm-layer').classList.contains('visible')){
+      closeConfirm();
+    } else {
+      closeShop();
+    }
+  }
+});
+
+/* ---------------------------------------------------------------------------
+   10) СТАРТ
+--------------------------------------------------------------------------- */
+renderCategories();
+renderItems();
+</script>
+</body>
+</html>
