@@ -43,13 +43,11 @@
 
   ::selection{ background:var(--violet); color:#fff; }
 
-  /* scrollbars */
   *::-webkit-scrollbar{ width:8px; height:8px; }
   *::-webkit-scrollbar-track{ background:transparent; }
   *::-webkit-scrollbar-thumb{ background:#2a2f3f; border-radius:8px; }
   *::-webkit-scrollbar-thumb:hover{ background:#383f54; }
 
-  /* ---------- backdrop ---------- */
   #backdrop{
     position:fixed; inset:0;
     display:flex; align-items:center; justify-content:center;
@@ -62,7 +60,6 @@
   }
   #backdrop.visible{ opacity:1; pointer-events:auto; }
 
-  /* ---------- shell ---------- */
   #shell{
     position:relative;
     width:min(1040px, 94vw);
@@ -79,7 +76,6 @@
   }
   #backdrop.visible #shell{ transform:translateY(0) scale(1); opacity:1; }
 
-  /* faint film-grain / scanline texture for the "night city" signature feel */
   #shell::before{
     content:"";
     position:absolute; inset:0;
@@ -89,7 +85,6 @@
     z-index:5;
   }
 
-  /* ---------- header ---------- */
   header{
     display:flex; align-items:center; justify-content:space-between;
     padding:18px 24px;
@@ -144,7 +139,6 @@
   }
   .icon-btn:hover{ background:var(--danger-soft); border-color:rgba(255,84,112,.4); color:#ff8fa3; }
 
-  /* ---------- body layout ---------- */
   .body{ flex:1; display:flex; min-height:0; }
 
   nav.categories{
@@ -180,8 +174,6 @@
   }
   .cat-btn.active .cat-count{ color:#d7c6ff; background:rgba(155,107,255,0.22); }
 
-  nav.categories .divider{ height:1px; background:var(--border-soft); margin:8px 4px; }
-
   main.content{
     flex:1; min-width:0; display:flex; flex-direction:column;
     padding:18px 22px; overflow:hidden;
@@ -215,7 +207,6 @@
 
   .scroll-area{ flex:1; overflow-y:auto; padding-right:4px; padding-bottom:6px; }
 
-  /* ---------- grid cards (skins / cars / accessories) ---------- */
   .grid{
     display:grid;
     grid-template-columns:repeat(auto-fill, minmax(200px, 1fr));
@@ -286,7 +277,6 @@
   .buy-btn:active{ transform:translateY(0); }
   .buy-btn[disabled]{ opacity:.5; cursor:not-allowed; filter:none; transform:none; }
 
-  /* ---------- list rows (services / other, no image) ---------- */
   .list{ display:flex; flex-direction:column; gap:10px; }
   .row-item{
     display:flex; align-items:center; gap:14px;
@@ -315,7 +305,6 @@
   .empty svg{ opacity:.35; margin-bottom:4px; }
   .empty b{ color:var(--text-muted); font-size:13px; }
 
-  /* ---------- confirm modal ---------- */
   #confirm-layer{
     position:absolute; inset:0;
     background:rgba(4,5,9,0.6);
@@ -385,7 +374,6 @@
   }
   @keyframes spin{ to{ transform:rotate(360deg); } }
 
-  /* ---------- toasts ---------- */
   #toasts{
     position:absolute; right:18px; bottom:18px;
     display:flex; flex-direction:column; gap:8px; z-index:30;
@@ -456,7 +444,6 @@
       </main>
     </div>
 
-    <!-- confirmation modal -->
     <div id="confirm-layer">
       <div class="confirm-box">
         <div class="ctitle" id="c-title">Подтверждение покупки</div>
@@ -491,17 +478,9 @@
 <script>
 /* ============================================================================
    IZZEENITY DONATE — CEF interface
-   Единый файл. Данные товаров задаются в ITEMS ниже — редактируйте свободно.
+   ID товаров ниже ДОЛЖНЫ совпадать 1-в-1 с ITEMS в donate_cef.pwn на сервере —
+   сервер сам проверяет цену/баланс, клиент — только витрина.
    ============================================================================ */
-
-/* ---------------------------------------------------------------------------
-   1) ДАННЫЕ МАГАЗИНА
-   image  — задавайте ТОЛЬКО для категорий cars / skins / accessories.
-            Разместите свои картинки в /public/images/... на Vercel и укажите
-            путь вида "/images/cars/audi.png", либо полный https-URL.
-   requiresInput — если true, при покупке появится текстовое поле
-            (например для смены ника нужно ввести новый ник).
---------------------------------------------------------------------------- */
 const CATEGORIES = [
   { id:'skins',       label:'Скины',       sub:'Внешний вид персонажа',                icon:'user'   },
   { id:'cars',        label:'Машины',      sub:'Донат-транспорт',                      icon:'car'    },
@@ -510,108 +489,40 @@ const CATEGORIES = [
 ];
 
 const ITEMS = [
-  // ---------- SKINS ----------
-  {
-    id:'skin_business', category:'skins', name:'Бизнесмен',
-    desc:'Премиум-скин для ролки в оргах',
-    price:250,
-    image:'https://placehold.co/400x270/171b28/8b93a7?text=Skin+Preview'
-  },
-  {
-    id:'skin_double_salary', category:'skins', name:'Скин «x2 Зарплата»',
-    desc:'Даёт x2 к зарплате в организации',
-    price:700,
-    badge:'x2 ЗП',
-    image:'https://placehold.co/400x270/171b28/8b93a7?text=Skin+x2+Salary'
-  },
-  {
-    id:'skin_street', category:'skins', name:'Уличный стиль',
-    desc:'Повседневный уникальный образ',
-    price:180,
-    image:'https://placehold.co/400x270/171b28/8b93a7?text=Skin+Preview'
-  },
+  // ---------- SKINS (после покупки прилетают в /backmoney как одежда) ----------
+  { id:'skin_business', category:'skins', name:'Бизнесмен', desc:'Премиум-скин для ролки в оргах', price:250,
+    image:'https://placehold.co/400x270/171b28/8b93a7?text=Skin+Preview' },
+  { id:'skin_double_salary', category:'skins', name:'Скин «x2 Зарплата»', desc:'Даёт x2 к зарплате в организации', price:700, badge:'x2 ЗП',
+    image:'https://placehold.co/400x270/171b28/8b93a7?text=Skin+x2+Salary' },
+  { id:'skin_street', category:'skins', name:'Уличный стиль', desc:'Повседневный уникальный образ', price:180,
+    image:'https://placehold.co/400x270/171b28/8b93a7?text=Skin+Preview' },
 
-  // ---------- CARS ----------
-  {
-    id:'car_audi', category:'cars', name:'Audi',
-    desc:'Донат-автомобиль, уникальный тюнинг',
-    price:500,
-    image:'https://placehold.co/400x270/171b28/8b93a7?text=Audi'
-  },
-  {
-    id:'car_bmw', category:'cars', name:'BMW M5',
-    desc:'Спорт-седан премиум класса',
-    price:650,
-    image:'https://placehold.co/400x270/171b28/8b93a7?text=BMW+M5'
-  },
-  {
-    id:'car_mercedes', category:'cars', name:'Mercedes-Benz',
-    desc:'Классика для авторитетных ролей',
-    price:800,
-    image:'https://placehold.co/400x270/171b28/8b93a7?text=Mercedes'
-  },
+  // ---------- CARS (после покупки — талон в /backmoney -> активация в инвентаре -> /cars) ----------
+  { id:'car_audi', category:'cars', name:'Audi', desc:'Донат-автомобиль, уникальный тюнинг', price:500,
+    image:'https://placehold.co/400x270/171b28/8b93a7?text=Audi' },
+  { id:'car_bmw', category:'cars', name:'BMW M5', desc:'Спорт-седан премиум класса', price:650,
+    image:'https://placehold.co/400x270/171b28/8b93a7?text=BMW+M5' },
+  { id:'car_mercedes', category:'cars', name:'Mercedes-Benz', desc:'Классика для авторитетных ролей', price:800,
+    image:'https://placehold.co/400x270/171b28/8b93a7?text=Mercedes' },
 
   // ---------- ACCESSORIES ----------
-  {
-    id:'acc_chain', category:'accessories', name:'Золотая цепь',
-    desc:'Аксессуар на шею',
-    price:120,
-    image:'https://placehold.co/400x270/171b28/8b93a7?text=Chain'
-  },
-  {
-    id:'acc_watch', category:'accessories', name:'Часы Rolex',
-    desc:'Премиум-аксессуар на руку',
-    price:220,
-    image:'https://placehold.co/400x270/171b28/8b93a7?text=Watch'
-  },
-  {
-    id:'acc_glasses', category:'accessories', name:'Очки Ray-Ban',
-    desc:'Стильный аксессуар на лицо',
-    price:90,
-    image:'https://placehold.co/400x270/171b28/8b93a7?text=Glasses'
-  },
+  { id:'acc_chain', category:'accessories', name:'Золотая цепь', desc:'Аксессуар на шею', price:120,
+    image:'https://placehold.co/400x270/171b28/8b93a7?text=Chain' },
+  { id:'acc_watch', category:'accessories', name:'Часы Rolex', desc:'Премиум-аксессуар на руку', price:220,
+    image:'https://placehold.co/400x270/171b28/8b93a7?text=Watch' },
+  { id:'acc_glasses', category:'accessories', name:'Очки Ray-Ban', desc:'Стильный аксессуар на лицо', price:90,
+    image:'https://placehold.co/400x270/171b28/8b93a7?text=Glasses' },
 
-  // ---------- SERVICES (без картинок — только название и покупка) ----------
-  {
-    id:'srv_nickname', category:'services', name:'Смена ника',
-    desc:'Установить новый игровой ник персонажу',
-    price:300,
-    requiresInput:true,
-    inputLabel:'Новый ник',
-    inputPlaceholder:'Имя_Фамилия',
-    inputPattern:/^[A-Z][a-z]+_[A-Z][a-z]+$/,
-    inputHint:'Формат: Имя_Фамилия, латиницей'
-  },
-  {
-    id:'srv_vip_bronze', category:'services', name:'VIP Bronze',
-    desc:'Базовый донат-статус на 30 дней',
-    price:150
-  },
-  {
-    id:'srv_vip_gold', category:'services', name:'VIP Gold',
-    desc:'Расширенный донат-статус на 30 дней',
-    price:400
-  },
-  {
-    id:'srv_gender', category:'services', name:'Смена пола',
-    desc:'Изменить пол персонажа',
-    price:150
-  },
-  {
-    id:'srv_house_slot', category:'services', name:'Доп. слот дома',
-    desc:'Дополнительный слот под недвижимость',
-    price:350
-  },
+  // ---------- SERVICES ----------
+  { id:'srv_nickname', category:'services', name:'Смена ника', desc:'Установить новый игровой ник персонажу', price:300,
+    requiresInput:true, inputLabel:'Новый ник', inputPlaceholder:'Имя_Фамилия',
+    inputPattern:/^[A-Z][a-z]+_[A-Z][a-z]+$/, inputHint:'Формат: Имя_Фамилия, латиницей' },
+  { id:'srv_vip_bronze', category:'services', name:'VIP Bronze', desc:'Базовый донат-статус на 30 дней', price:150 },
+  { id:'srv_vip_gold', category:'services', name:'VIP Gold', desc:'Расширенный донат-статус на 30 дней', price:400 },
+  { id:'srv_gender', category:'services', name:'Смена пола', desc:'Изменить пол персонажа', price:150 },
+  { id:'srv_house_slot', category:'services', name:'Доп. слот дома', desc:'Дополнительный слот под недвижимость', price:350 },
 ];
 
-/* ---------------------------------------------------------------------------
-   2) МОСТ К ИГРЕ (samp-cef)
-   На стороне Pawn:  cef_subscribe("donate:buy", "OnDonateBuy") ...
-   Здесь мы просто вызываем cef.emit(...) и слушаем cef.on(...).
-   Если страница открыта вне игры (например, для превью на Vercel в обычном
-   браузере), автоматически включается ЛОКАЛЬНАЯ ЗАГЛУШКА — она даёт демо-баланс
-   и "подтверждает" покупки через 700мс, чтобы можно было проверить вёрстку.
---------------------------------------------------------------------------- */
 let bridge;
 if (typeof cef !== 'undefined') {
   bridge = cef;
@@ -628,30 +539,15 @@ if (typeof cef !== 'undefined') {
           handlers['donate:response'] && handlers['donate:response'](true, 'Покупка успешна (демо-режим)', itemId);
         }, 700);
       }
-      if (event === 'donate:close') {
-        // no-op in preview
-      }
     }
   };
-  // демо-инициализация после загрузки
   window.addEventListener('load', () => {
     setTimeout(() => handlers['donate:init'] && handlers['donate:init'](12500, 'Player_Demo'), 50);
   });
 }
 
-/* ---------------------------------------------------------------------------
-   3) СОСТОЯНИЕ
---------------------------------------------------------------------------- */
-const state = {
-  balance: 0,
-  activeCategory: 'skins',
-  search: '',
-  pendingItem: null,
-};
+const state = { balance:0, activeCategory:'skins', search:'', pendingItem:null };
 
-/* ---------------------------------------------------------------------------
-   4) ИКОНКИ (inline svg, без внешних зависимостей)
---------------------------------------------------------------------------- */
 const ICONS = {
   user:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>',
   car:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 13l1.5-5A2 2 0 0 1 6.4 6.5h11.2A2 2 0 0 1 19.5 8L21 13"/><rect x="2.5" y="13" width="19" height="5" rx="1.5"/><circle cx="7" cy="18.5" r="1.6"/><circle cx="17" cy="18.5" r="1.6"/></svg>',
@@ -659,9 +555,6 @@ const ICONS = {
   star:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.6 6.1 20.6l1.3-6.6-4.9-4.6 6.6-.8z"/></svg>',
 };
 
-/* ---------------------------------------------------------------------------
-   5) РЕНДЕР
---------------------------------------------------------------------------- */
 function fmt(n){ return n.toLocaleString('ru-RU'); }
 
 function renderCategories(){
@@ -756,9 +649,6 @@ function rowHTML(item){
     </div>`;
 }
 
-/* ---------------------------------------------------------------------------
-   6) МОДАЛКА ПОДТВЕРЖДЕНИЯ ПОКУПКИ
---------------------------------------------------------------------------- */
 function openConfirm(itemId){
   const item = ITEMS.find(i => i.id === itemId);
   if (!item) return;
@@ -834,8 +724,7 @@ function submitPurchase(){
   confirmBtn.disabled = true;
   confirmBtn.innerHTML = '<span class="spinner"></span>';
 
-  // Отправляем событие в игру. Сервер обязан САМ проверить цену и баланс —
-  // клиент используется только как интерфейс, а не источник истины.
+  // Сервер САМ проверяет цену/баланс/владение предметом — клиент лишь интерфейс.
   bridge.emit('donate:buy', item.id, extraValue);
 }
 
@@ -846,9 +735,6 @@ document.getElementById('confirm-layer').addEventListener('click', e => {
   if (e.target.id === 'confirm-layer') closeConfirm();
 });
 
-/* ---------------------------------------------------------------------------
-   7) TOASTS
---------------------------------------------------------------------------- */
 function toast(type, title, text){
   const el = document.createElement('div');
   el.className = 'toast ' + type;
@@ -863,18 +749,14 @@ function toast(type, title, text){
   }, 3200);
 }
 
-/* ---------------------------------------------------------------------------
-   8) СОБЫТИЯ ОТ ИГРЫ (сервера)
---------------------------------------------------------------------------- */
-
-// вызывается при открытии /donate: cef_emit_event(playerid, "donate:init", coins, nickname)
+// cef_emit_event(playerid, "donate:init", stcoins, nickname)
 bridge.on('donate:init', (coins, nickname) => {
   state.balance = coins || 0;
   document.getElementById('balance-value').textContent = fmt(state.balance);
   document.getElementById('backdrop').classList.add('visible');
 });
 
-// ответ сервера на покупку: cef_emit_event(playerid, "donate:response", success, message, itemId, newBalance)
+// cef_emit_event(playerid, "donate:response", success, message, itemId, newBalance)
 bridge.on('donate:response', (success, message, itemId, newBalance) => {
   const confirmBtn = document.getElementById('c-confirm');
 
@@ -892,15 +774,11 @@ bridge.on('donate:response', (success, message, itemId, newBalance) => {
   }
 });
 
-// на случай если баланс обновится извне (например после других покупок в игре)
 bridge.on('donate:balance', (coins) => {
   state.balance = coins || 0;
   document.getElementById('balance-value').textContent = fmt(state.balance);
 });
 
-/* ---------------------------------------------------------------------------
-   9) ЗАКРЫТИЕ / ПОИСК / ГОРЯЧИЕ КЛАВИШИ
---------------------------------------------------------------------------- */
 function closeShop(){
   document.getElementById('backdrop').classList.remove('visible');
   closeConfirm();
@@ -924,9 +802,6 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-/* ---------------------------------------------------------------------------
-   10) СТАРТ
---------------------------------------------------------------------------- */
 renderCategories();
 renderItems();
 </script>
