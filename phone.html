@@ -7,13 +7,42 @@
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0a0c12;--card:#151a26;--line:rgba(255,255,255,.08);--text:#eef0f6;--muted:#8b93a7;
---violet:#9b6bff;--green:#2ed573;--red:#ff6b81;--amber:#f5b942;--cyan:#4fd6d0}
+--violet:#9b6bff;--green:#2ed573;--red:#ff6b81}
 *{box-sizing:border-box;margin:0;padding:0;user-select:none;-webkit-tap-highlight-color:transparent}
-body{background:transparent;font-family:'Manrope',system-ui,sans-serif;color:var(--text);overflow:hidden}
-#wrap{width:100%;height:100vh;display:flex;align-items:center;justify-content:center}
-#phone{width:340px;height:680px;background:linear-gradient(165deg,#12151f 0%,#0a0c12 100%);
-border-radius:40px;border:3px solid #2a3144;position:relative;overflow:hidden;
-box-shadow:0 30px 80px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,255,255,.04)}
+html,body{width:100%;height:100%;background:transparent;font-family:'Manrope',system-ui,sans-serif;color:var(--text);overflow:hidden}
+
+/* контейнер: телефон внизу справа */
+#stage{
+  position:fixed; inset:0; pointer-events:none;
+  display:flex; align-items:flex-end; justify-content:flex-end;
+  padding: 0 28px 28px 0;
+}
+#stage.open{ pointer-events:auto; }
+
+#phone{
+  width:340px; height:680px;
+  background:linear-gradient(165deg,#12151f 0%,#0a0c12 100%);
+  border-radius:40px; border:3px solid #2a3144; position:relative; overflow:hidden;
+  box-shadow:0 30px 80px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.04);
+  /* старт: за экраном справа-снизу */
+  transform: translate(120%, 40%) scale(.92);
+  opacity:0;
+  transition:
+    transform .42s cubic-bezier(.22,.9,.28,1),
+    opacity .32s ease;
+  will-change: transform, opacity;
+}
+#stage.open #phone{
+  transform: translate(0, 0) scale(1);
+  opacity:1;
+}
+/* уход */
+#stage.closing #phone{
+  transform: translate(120%, 40%) scale(.92);
+  opacity:0;
+  pointer-events:none;
+}
+
 .notch{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:110px;height:24px;background:#000;border-radius:14px;z-index:20}
 .status{padding:40px 20px 6px;display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-weight:700}
 .screen{height:calc(100% - 118px);position:relative;overflow:hidden}
@@ -54,17 +83,17 @@ border:1px solid var(--line);color:var(--muted);display:flex;align-items:center;
 </style>
 </head>
 <body>
-<div id="wrap">
+<div id="stage">
 <div id="phone">
   <div class="notch"></div>
-  <div class="close-mini" id="btn-x">✕</div>
+  <div class="close-mini" id="btn-x" title="ESC">✕</div>
   <div class="status"><span id="clock">12:00</span><span>IzPhone</span></div>
   <div class="screen">
 
     <div class="page active" id="page-home">
       <div class="hero">
         <h1>IzPhone</h1>
-        <p>P или /phone — открыть / закрыть</p>
+        <p>/phone · ESC закрыть</p>
       </div>
       <div class="dark-card" data-page="dark">
         <div class="t">🕶  DarkIZ</div>
@@ -82,7 +111,7 @@ border:1px solid var(--line);color:var(--muted);display:flex;align-items:center;
       <h2>Звонок</h2>
       <input id="call-number" placeholder="Номер телефона" maxlength="8"/>
       <button class="btn btn-g" id="btn-call">Позвонить</button>
-      <p class="msg">Сервисы: наберите 911. Команда /call работает как раньше.</p>
+      <p class="msg">Сервисы: 911. /call работает как раньше.</p>
     </div>
 
     <div class="page" id="page-sms">
@@ -103,7 +132,7 @@ border:1px solid var(--line);color:var(--muted);display:flex;align-items:center;
     <div class="page" id="page-taxi">
       <div class="back" data-back>← Назад</div>
       <h2>Такси</h2>
-      <p class="msg">Опишите, где вы находитесь (6–20 символов). Запрос уйдёт таксистам на смене.</p>
+      <p class="msg">Опишите, где вы (6–20 символов).</p>
       <input id="taxi-place" placeholder="Например: у мэрии LS" maxlength="20"/>
       <button class="btn btn-g" id="btn-taxi">Вызвать такси</button>
     </div>
@@ -116,12 +145,12 @@ border:1px solid var(--line);color:var(--muted);display:flex;align-items:center;
         Регистрация и активность могут привести к <b>тюрьме</b> по законам штата.
       </div>
       <div id="dark-reg">
-        <p class="msg">Создайте анонимный ник (3–16, латиница/цифры/_)</p>
+        <p class="msg">Анонимный ник (3–16, латиница/цифры/_)</p>
         <input id="dark-nick" placeholder="dark_nick" maxlength="16"/>
         <button class="btn btn-r" id="btn-dark-reg">Зарегистрироваться</button>
       </div>
       <div id="dark-main" style="display:none">
-        <p class="msg">Вы вошли как <b id="dark-me">—</b></p>
+        <p class="msg">Вы: <b id="dark-me">—</b></p>
         <button class="btn btn-v" id="btn-dark-ads">Объявления</button>
         <button class="btn btn-v" id="btn-dark-pm">Написать ЛС</button>
         <button class="btn btn-d" id="btn-dark-inbox">Входящие ЛС</button>
@@ -141,7 +170,7 @@ border:1px solid var(--line);color:var(--muted);display:flex;align-items:center;
     <div class="page" id="page-dark-pm">
       <div class="back" id="back-dark2">← DarkIZ</div>
       <h2>DarkIZ ЛС</h2>
-      <input id="pm-to" placeholder="Ник DarkIZ получателя" maxlength="16"/>
+      <input id="pm-to" placeholder="Ник DarkIZ" maxlength="16"/>
       <textarea id="pm-text" placeholder="Сообщение" maxlength="160"></textarea>
       <button class="btn btn-r" id="btn-pm-send">Отправить</button>
     </div>
@@ -158,99 +187,159 @@ border:1px solid var(--line);color:var(--muted);display:flex;align-items:center;
 </div>
 <script>
 const bridge = (typeof cef !== 'undefined') ? cef : {
-  on(){}, emit(e,...a){ console.log('[phone mock]', e, a); }
+  on(){}, emit(e,...a){ console.log('[phone]', e, a); }
 };
-function show(id){
+
+const stage = document.getElementById('stage');
+let closing = false;
+let openTimer = null;
+
+function showPage(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+  const el = document.getElementById(id);
+  if(el) el.classList.add('active');
 }
-document.querySelectorAll('[data-page]').forEach(el=>el.onclick=()=>show('page-'+el.dataset.page));
-document.querySelectorAll('[data-back]').forEach(el=>el.onclick=()=>show('page-home'));
-document.getElementById('back-sms').onclick=()=>show('page-sms');
-document.getElementById('back-dark').onclick=()=>show('page-dark');
-document.getElementById('back-dark2').onclick=()=>show('page-dark');
-document.getElementById('back-dark3').onclick=()=>show('page-dark');
-document.getElementById('btn-x').onclick=()=>bridge.emit('phone:close');
-document.getElementById('btn-call').onclick=()=>{
-  const n=document.getElementById('call-number').value.trim();
+
+function phoneOpen(){
+  if(closing) return;
+  stage.classList.remove('closing');
+  // force reflow so transition plays every time
+  void stage.offsetWidth;
+  stage.classList.add('open');
+  showPage('page-home');
+}
+
+function phoneClose(){
+  if(closing) return;
+  if(!stage.classList.contains('open')) {
+    bridge.emit('phone:close');
+    return;
+  }
+  closing = true;
+  stage.classList.add('closing');
+  stage.classList.remove('open');
+  // после анимации сообщаем серверу (не спамим)
+  clearTimeout(openTimer);
+  openTimer = setTimeout(()=>{
+    closing = false;
+    stage.classList.remove('closing');
+    bridge.emit('phone:close');
+  }, 420);
+}
+
+document.querySelectorAll('[data-page]').forEach(el=>{
+  el.onclick = ()=>showPage('page-'+el.dataset.page);
+});
+document.querySelectorAll('[data-back]').forEach(el=>{
+  el.onclick = ()=>showPage('page-home');
+});
+document.getElementById('back-sms').onclick = ()=>showPage('page-sms');
+document.getElementById('back-dark').onclick = ()=>showPage('page-dark');
+document.getElementById('back-dark2').onclick = ()=>showPage('page-dark');
+document.getElementById('back-dark3').onclick = ()=>showPage('page-dark');
+document.getElementById('btn-x').onclick = phoneClose;
+
+document.getElementById('btn-call').onclick = ()=>{
+  const n = document.getElementById('call-number').value.trim();
   if(n) bridge.emit('phone:call', n);
 };
-document.getElementById('btn-sms').onclick=()=>{
-  const to=document.getElementById('sms-to').value.trim();
-  const t=document.getElementById('sms-text').value.trim();
-  if(to&&t) bridge.emit('phone:sms', to, t);
+document.getElementById('btn-sms').onclick = ()=>{
+  const to = document.getElementById('sms-to').value.trim();
+  const t = document.getElementById('sms-text').value.trim();
+  if(to && t) bridge.emit('phone:sms', to, t);
 };
-document.getElementById('btn-taxi').onclick=()=>{
-  const p=document.getElementById('taxi-place').value.trim();
-  if(p.length>=6) bridge.emit('phone:taxi', p);
+document.getElementById('btn-taxi').onclick = ()=>{
+  const p = document.getElementById('taxi-place').value.trim();
+  if(p.length >= 6) bridge.emit('phone:taxi', p);
 };
-document.getElementById('btn-dark-reg').onclick=()=>{
-  const n=document.getElementById('dark-nick').value.trim();
-  if(n.length>=3) bridge.emit('phone:darkreg', n);
+document.getElementById('btn-dark-reg').onclick = ()=>{
+  const n = document.getElementById('dark-nick').value.trim();
+  if(n.length >= 3) bridge.emit('phone:darkreg', n);
 };
-document.getElementById('btn-dark-ads').onclick=()=>{ show('page-dark-ads'); bridge.emit('phone:darkads'); };
-document.getElementById('btn-dark-pm').onclick=()=>show('page-dark-pm');
-document.getElementById('btn-dark-inbox').onclick=()=>{ show('page-dark-inbox'); bridge.emit('phone:darkinbox'); };
-document.getElementById('btn-ad-post').onclick=()=>{
+document.getElementById('btn-dark-ads').onclick = ()=>{ showPage('page-dark-ads'); bridge.emit('phone:darkads'); };
+document.getElementById('btn-dark-pm').onclick = ()=>showPage('page-dark-pm');
+document.getElementById('btn-dark-inbox').onclick = ()=>{ showPage('page-dark-inbox'); bridge.emit('phone:darkinbox'); };
+document.getElementById('btn-ad-post').onclick = ()=>{
   bridge.emit('phone:darkpost',
     document.getElementById('ad-title').value.trim(),
     document.getElementById('ad-body').value.trim(),
-    document.getElementById('ad-price').value.trim()||'0');
+    document.getElementById('ad-price').value.trim() || '0');
 };
-document.getElementById('btn-pm-send').onclick=()=>{
+document.getElementById('btn-pm-send').onclick = ()=>{
   bridge.emit('phone:darkpm',
     document.getElementById('pm-to').value.trim(),
     document.getElementById('pm-text').value.trim());
 };
+
 function setDark(nick){
   if(nick){
-    document.getElementById('dark-reg').style.display='none';
-    document.getElementById('dark-main').style.display='block';
-    document.getElementById('dark-me').textContent=nick;
+    document.getElementById('dark-reg').style.display = 'none';
+    document.getElementById('dark-main').style.display = 'block';
+    document.getElementById('dark-me').textContent = nick;
   } else {
-    document.getElementById('dark-reg').style.display='block';
-    document.getElementById('dark-main').style.display='none';
+    document.getElementById('dark-reg').style.display = 'block';
+    document.getElementById('dark-main').style.display = 'none';
   }
 }
-bridge.on && bridge.on('phone:darkstatus', (nick)=>setDark(nick||''));
-bridge.on && bridge.on('phone:smslist', (list)=>{
-  const box=document.getElementById('sms-list'); box.innerHTML='';
-  (list||[]).forEach(c=>{
-    const d=document.createElement('div'); d.className='item';
-    d.innerHTML=`<div><b>${c.name||c.number}</b><br><small>${c.last||''}</small></div>`;
-    d.onclick=()=>{
-      document.getElementById('thread-title').textContent=c.name||c.number;
-      const tl=document.getElementById('thread-list'); tl.innerHTML='';
-      (c.messages||[]).forEach(m=>{
-        const x=document.createElement('div'); x.className='item';
-        x.innerHTML=`<div>${m.text}<br><small>${m.time||''}</small></div>`;
-        tl.appendChild(x);
-      });
-      show('page-sms-thread');
-    };
-    box.appendChild(d);
+
+if(bridge.on){
+  bridge.on('phone:open', phoneOpen);
+  bridge.on('phone:forceclose', phoneClose);
+  bridge.on('phone:darkstatus', (nick)=>setDark(nick||''));
+  bridge.on('phone:smslist', (list)=>{
+    const box = document.getElementById('sms-list'); box.innerHTML = '';
+    (list||[]).forEach(c=>{
+      const d = document.createElement('div'); d.className = 'item';
+      d.innerHTML = `<div><b>${c.name||c.number}</b><br><small>${c.last||''}</small></div>`;
+      d.onclick = ()=>{
+        document.getElementById('thread-title').textContent = c.name||c.number;
+        const tl = document.getElementById('thread-list'); tl.innerHTML = '';
+        (c.messages||[]).forEach(m=>{
+          const x = document.createElement('div'); x.className = 'item';
+          x.innerHTML = `<div>${m.text}<br><small>${m.time||''}</small></div>`;
+          tl.appendChild(x);
+        });
+        showPage('page-sms-thread');
+      };
+      box.appendChild(d);
+    });
   });
-});
-bridge.on && bridge.on('phone:adslist', (list)=>{
-  const box=document.getElementById('ads-list'); box.innerHTML='';
-  (list||[]).forEach(a=>{
-    const d=document.createElement('div'); d.className='item';
-    d.innerHTML=`<div><b>${a.title}</b> — ${a.price}$<br><small>${a.nick}: ${a.body}</small></div>`;
-    box.appendChild(d);
+  bridge.on('phone:adslist', (list)=>{
+    const box = document.getElementById('ads-list'); box.innerHTML = '';
+    (list||[]).forEach(a=>{
+      const d = document.createElement('div'); d.className = 'item';
+      d.innerHTML = `<div><b>${a.title}</b> — ${a.price}$<br><small>${a.nick}: ${a.body}</small></div>`;
+      box.appendChild(d);
+    });
   });
-});
-bridge.on && bridge.on('phone:inbox', (list)=>{
-  const box=document.getElementById('inbox-list'); box.innerHTML='';
-  (list||[]).forEach(m=>{
-    const d=document.createElement('div'); d.className='item';
-    d.innerHTML=`<div><b>${m.from}</b><br><small>${m.text}</small></div>`;
-    box.appendChild(d);
+  bridge.on('phone:inbox', (list)=>{
+    const box = document.getElementById('inbox-list'); box.innerHTML = '';
+    (list||[]).forEach(m=>{
+      const d = document.createElement('div'); d.className = 'item';
+      d.innerHTML = `<div><b>${m.from}</b><br><small>${m.text}</small></div>`;
+      box.appendChild(d);
+    });
   });
+}
+
+// ESC — плавное закрытие (один раз за анимацию)
+document.addEventListener('keydown', (e)=>{
+  if(e.key === 'Escape' || e.keyCode === 27){
+    e.preventDefault();
+    phoneClose();
+  }
 });
+
+// при загрузке CEF-браузера — выезд
+window.addEventListener('load', ()=>{
+  requestAnimationFrame(()=>phoneOpen());
+});
+
 setInterval(()=>{
-  const d=new Date();
-  document.getElementById('clock').textContent=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
-},1000);
+  const d = new Date();
+  document.getElementById('clock').textContent =
+    String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+}, 1000);
 </script>
 </body>
 </html>
