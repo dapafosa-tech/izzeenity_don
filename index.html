@@ -130,7 +130,7 @@
   .card .info{ padding:12px 12px 13px; display:flex; flex-direction:column; gap:8px; flex:1; }
   .card .name{ font-size:14px; font-weight:800; color:var(--text); line-height:1.25; }
   .card .desc{ font-size:11.5px; color:var(--text-dim); line-height:1.4; }
-  .card .row{ display:flex; align-items:center; justify-content:space-between; margin-top:auto; gap:8px; }
+  .card .row{ display:flex; align-items:center; justify-content:space-between; margin-top:auto; gap:8px; flex-wrap:wrap; }
   .price{ display:flex; align-items:center; gap:6px; font-family:'Bebas Neue', sans-serif; font-size:17px; color:#ffd98a; letter-spacing:.5px; }
   .price .coin{ width:14px; height:14px; border-radius:50%; background:radial-gradient(circle at 35% 30%, #ffe9b0, var(--amber) 60%, #b9822a); flex-shrink:0; }
   .buy-btn{
@@ -141,6 +141,11 @@
   .buy-btn:hover{ filter:brightness(1.08); transform:translateY(-1px); }
   .buy-btn:active{ transform:translateY(0); }
   .buy-btn[disabled]{ opacity:.5; cursor:not-allowed; filter:none; transform:none; }
+  .try-btn{
+    background:#2a2f3f; color:var(--text-muted); border:1px solid var(--border); border-radius:9px;
+    padding:8px 12px; font-size:12px; font-weight:800; cursor:pointer; transition:.15s; white-space:nowrap;
+  }
+  .try-btn:hover{ color:#fff; border-color:rgba(155,107,255,.4); }
   .list{ display:flex; flex-direction:column; gap:10px; }
   .row-item{
     display:flex; align-items:center; gap:14px; background:var(--card); border:1px solid var(--border);
@@ -159,7 +164,6 @@
     display:flex; flex-direction:column; align-items:center; justify-content:center;
     height:100%; color:var(--text-dim); gap:8px; text-align:center;
   }
-  .empty svg{ opacity:.35; margin-bottom:4px; }
   .empty b{ color:var(--text-muted); font-size:13px; }
   #confirm-layer{
     position:absolute; inset:0; background:rgba(4,5,9,0.6); backdrop-filter:blur(3px);
@@ -247,7 +251,7 @@
         <div class="content-top">
           <div>
             <div class="content-title" id="content-title">Скины</div>
-            <div class="content-sub" id="content-sub">Эксклюзивная одежда из /donate</div>
+            <div class="content-sub" id="content-sub">После покупки — в /backmoney</div>
           </div>
           <div class="search">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
@@ -283,76 +287,63 @@
   </div>
 </div>
 <script>
-/* ID товаров = 1-в-1 с DONATE_ITEMS[].d_item_id в donate_cef.pwn */
+/* ID = 1:1 с donate_cef.pwn DONATE_ITEMS */
 const CATEGORIES = [
-  { id:'skins', label:'Скины', sub:'После покупки — в /backmoney (одежда)', icon:'user' },
-  { id:'cars', label:'Машины', sub:'Талон → инвентарь / /backmoney', icon:'car' },
-  { id:'acc', label:'Аксессуары', sub:'После покупки — в /backmoney', icon:'star' },
-  { id:'services', label:'Услуги', sub:'Цены как в классическом /donate', icon:'star' },
+  { id:'skins', label:'Скины', sub:'После покупки — в /backmoney', icon:'user' },
+  { id:'cars', label:'Машины', sub:'Талон в инвентарь', icon:'car' },
+  { id:'services', label:'Услуги', sub:'Обмен, варн, номер, VIP…', icon:'star' },
 ];
 
-/* Реальные товары из /donate мода (цены в Coins / stcoins) */
 const ITEMS = [
-  // --- СКИНЫ (InsertBackMoney type=5) ---
-  { id:'skin_swfyri', category:'skins', name:'Девушка Крипс', desc:'Скин #800. x2 ЗП фракции + 50% IzCoin. /backmoney', price:3000, badge:'NEW',
+  /* ===== СКИНЫ (актуальные цены, без wuzimu) ===== */
+  { id:'skin_swfyri', category:'skins', name:'Девушка Крипс', desc:'#800 · x2 ЗП орг · 50% IzCoin · походка CJ · /backmoney', price:5000, badge:'NEW',
     image:'https://izzeenity-don.vercel.app/img/crisp_swfyri.png' },
-  { id:'skin_wuzimu', category:'skins', name:'Вузиму', desc:'Эксклюзив #294. /backmoney', price:800, badge:'EXCL',
-    image:'https://izzeenity-don.vercel.app/img/woozimu.png' },
-  { id:'skin_ryder', category:'skins', name:'Райдер', desc:'Эксклюзив #271. /backmoney', price:800, badge:'EXCL',
-    image:'https://izzeenity-don.vercel.app/img/' },
-  { id:'skin_heck2', category:'skins', name:'Хек2', desc:'Эксклюзив #259. /backmoney', price:500, badge:'EXCL',
-    image:'https://izzeenity-don.vercel.app/img/' },
-  { id:'skin_somori', category:'skins', name:'Сомори', desc:'Эксклюзив #228. /backmoney', price:800, badge:'EXCL',
-    image:'https://izzeenity-don.vercel.app/img/' },
-  { id:'skin_cesar', category:'skins', name:'Сезарь Виальпандо', desc:'Скин #292. После покупки в /backmoney', price:300, image:'https://izzeenity-don.vercel.app/img/' },
-  { id:'skin_dwayne', category:'skins', name:'Дуэйн', desc:'Скин #268. После покупки в /backmoney', price:300, image:'https://izzeenity-don.vercel.app/img/' },
-  { id:'skin_pimp', category:'skins', name:'Пимп', desc:'Скин #249. После покупки в /backmoney', price:300, image:'https://izzeenity-don.vercel.app/img/' },
-  { id:'skin_valet', category:'skins', name:'Валет', desc:'Скин #189. После покупки в /backmoney', price:300, image:'https://izzeenity-don.vercel.app/img/' },
-  { id:'skin_bodyguard', category:'skins', name:'Телохранитель', desc:'Скин #97. После покупки в /backmoney', price:300, image:'https://izzeenity-don.vercel.app/img/' },
-  { id:'skin_beach', category:'skins', name:'Пляжный', desc:'Скин #18. После покупки в /backmoney', price:300, image:'https://izzeenity-don.vercel.app/img/' },
-  { id:'skin_paul', category:'skins', name:'Пол', desc:'Скин #291. После покупки в /backmoney', price:300, image:'https://izzeenity-don.vercel.app/img/' },
+  { id:'skin_ryder', category:'skins', name:'Райдер', desc:'#271 · /backmoney', price:300, image:'' },
+  { id:'skin_bodyguard', category:'skins', name:'Телохранитель', desc:'#97 · /backmoney', price:500, image:'' },
+  { id:'skin_somori', category:'skins', name:'Сомори', desc:'#228 · /backmoney', price:800, image:'' },
+  { id:'skin_beach', category:'skins', name:'Пляжный', desc:'#18 · /backmoney', price:300, image:'' },
+  { id:'skin_paul', category:'skins', name:'Пол', desc:'#291 · /backmoney', price:300, image:'' },
+  { id:'skin_pimp', category:'skins', name:'Пимп', desc:'#249 · /backmoney', price:300, image:'' },
+  { id:'skin_valet', category:'skins', name:'Валет', desc:'#189 · /backmoney', price:300, image:'' },
+  { id:'skin_dwayne', category:'skins', name:'Дуэйн', desc:'#268 · /backmoney', price:300, image:'' },
+  { id:'skin_cesar', category:'skins', name:'Сезарь Виальпандо', desc:'#292 · /backmoney', price:300, image:'' },
 
-  // --- МАШИНЫ (талон / backmoney) ---
-  { id:'car_audi', category:'cars', name:'Audi A8', desc:'Кастом #3194→612. Талон в инвентарь /backmoney', price:500, badge:'NEW', image:'' },
-  { id:'car_infernus', category:'cars', name:'Infernus', desc:'Модель 411. Талон на транспорт', price:5500, badge:'RARE', image:'' },
-  { id:'car_elegy', category:'cars', name:'Elegy', desc:'Модель 562. Талон на транспорт', price:1500, image:'' },
-  { id:'car_sultan', category:'cars', name:'Sultan', desc:'Модель 560. Талон на транспорт', price:1500, image:'' },
-  { id:'car_huntley', category:'cars', name:'Huntley', desc:'Модель 579. Талон на транспорт', price:750, image:'' },
-  { id:'car_supergt', category:'cars', name:'Super GT', desc:'Модель 506. Талон на транспорт', price:1500, image:'' },
-  { id:'car_sanchez', category:'cars', name:'Sanchez', desc:'Модель 468. Талон на транспорт', price:500, image:'' },
-  { id:'car_phoenix', category:'cars', name:'Phoenix', desc:'Модель 603. Талон на транспорт', price:750, image:'' },
-  { id:'car_stretch', category:'cars', name:'Stretch', desc:'Модель 409. Эксклюзив', price:9000, badge:'EXCL', image:'' },
-  { id:'car_fbirancher', category:'cars', name:'FBI Rancher', desc:'Модель 490. Эксклюзив', price:10000, badge:'EXCL', image:'' },
-  { id:'car_hotring', category:'cars', name:'Hotring', desc:'Модель 494. Эксклюзив', price:13000, badge:'EXCL', image:'' },
-  { id:'car_mesa', category:'cars', name:'Mesa', desc:'Модель 500. Эксклюзив', price:6500, badge:'EXCL', image:'' },
-  { id:'car_ranger', category:'cars', name:'Police Ranger', desc:'Модель 599. Эксклюзив', price:8000, badge:'EXCL', image:'' },
-  { id:'car_police', category:'cars', name:'Police Car', desc:'Модель 596. Эксклюзив', price:8000, badge:'EXCL', image:'' },
-  { id:'car_dune', category:'cars', name:'Dune', desc:'Модель 573. Эксклюзив', price:15000, badge:'EXCL', image:'' },
-  { id:'car_maybach', category:'cars', name:'Mercedes Maybach', desc:'Сервер-модель 651. Эксклюзив', price:3000, badge:'EXCL', image:'' },
-  { id:'car_lc200', category:'cars', name:'Toyota LC 200', desc:'Сервер-модель 669. Эксклюзив', price:2700, badge:'EXCL', image:'' },
+  /* ===== МАШИНЫ ===== */
+  { id:'car_audi', category:'cars', name:'Audi A8', desc:'Талон · model 3194', price:3000, badge:'NEW', image:'' },
+  { id:'car_infernus', category:'cars', name:'Infernus', desc:'Талон · 411', price:1000, image:'' },
+  { id:'car_elegy', category:'cars', name:'Elegy', desc:'Талон · 562', price:500, image:'' },
+  { id:'car_sultan', category:'cars', name:'Sultan', desc:'Талон · 560', price:800, image:'' },
+  { id:'car_huntley', category:'cars', name:'Huntley', desc:'Талон · 579', price:750, image:'' },
+  { id:'car_supergt', category:'cars', name:'Super GT', desc:'Талон · 506', price:800, image:'' },
+  { id:'car_sanchez', category:'cars', name:'Sanchez', desc:'Талон · 468', price:300, image:'' },
+  { id:'car_phoenix', category:'cars', name:'Phoenix', desc:'Талон · 603', price:750, image:'' },
+  { id:'car_stretch', category:'cars', name:'Stretch', desc:'Талон · 409', price:1500, image:'' },
+  { id:'car_fbirancher', category:'cars', name:'FBI Rancher', desc:'Талон · 490', price:5000, image:'' },
+  { id:'car_hotring', category:'cars', name:'Hotring', desc:'Талон · 494', price:3000, image:'' },
+  { id:'car_mesa', category:'cars', name:'Mesa', desc:'Талон · 500', price:1000, image:'' },
+  { id:'car_ranger', category:'cars', name:'Police Ranger', desc:'Талон · 599', price:1000, image:'' },
+  { id:'car_police', category:'cars', name:'Police Car', desc:'Талон · 596', price:8000, image:'' },
+  { id:'car_dune', category:'cars', name:'Dune', desc:'Талон · 573', price:3000, image:'' },
 
-  
-  // --- АКСЕССУАРЫ (пример — добавьте свои id как в donate_cef) ---
-  { id:'acc_watch', category:'acc', name:'Часы', desc:'Аксессуар. После покупки в /backmoney', price:200, image:'' },
-  { id:'acc_glasses', category:'acc', name:'Очки', desc:'Аксессуар. После покупки в /backmoney', price:150, image:'' },
-  { id:'acc_hat', category:'acc', name:'Шляпа', desc:'Аксессуар. После покупки в /backmoney', price:180, image:'' },
-
-// --- УСЛУГИ (как в /donate) ---
-  { id:'srv_nickname', category:'services', name:'Смена ника', desc:'Цена как в /donate — 50 Coins', price:50,
+  /* ===== УСЛУГИ (обмен первым) ===== */
+  { id:'srv_exchange', category:'services', name:'Обмен Coins → вирты', desc:'1 Coin = 700$. Введите количество коинов', price:1,
+    requiresInput:true, inputLabel:'Количество Coins', inputPlaceholder:'10',
+    inputPattern:/^\d+$/, inputHint:'1 Coin = 700$ на баланс' },
+  { id:'srv_nickname', category:'services', name:'Смена ника', desc:'50 Coins', price:50,
     requiresInput:true, inputLabel:'Новый ник', inputPlaceholder:'Name_Surname',
-    inputPattern:/^[A-Z][a-z]+_[A-Z][a-z]+$/, inputHint:'Формат: Name_Surname, латиница' },
-  { id:'srv_gender', category:'services', name:'Смена пола', desc:'Как в /donate — 50 Coins', price:50 },
-  { id:'srv_unwarn', category:'services', name:'Снять варн', desc:'Снятие предупреждения — 250 Coins', price:250 },
+    inputPattern:/^[A-Z][a-z]+_[A-Z][a-z]+$/, inputHint:'Формат Name_Surname' },
+  { id:'srv_gender', category:'services', name:'Смена пола', desc:'50 Coins', price:50 },
+  { id:'srv_unwarn', category:'services', name:'Снять варн', desc:'1 активный варн · 250 Coins', price:250 },
   { id:'srv_gpass', category:'services', name:'Очистить гетто-паспорт', desc:'300 Coins', price:300 },
-  { id:'srv_phone', category:'services', name:'Смена номера телефона', desc:'5-значный номер — 750 Coins', price:750,
-    requiresInput:true, inputLabel:'Номер (5 цифр)', inputPlaceholder:'12345',
+  { id:'srv_phone', category:'services', name:'Смена номера телефона', desc:'5 цифр · 750 Coins', price:750,
+    requiresInput:true, inputLabel:'Номер', inputPlaceholder:'12345',
     inputPattern:/^\d{5}$/, inputHint:'Ровно 5 цифр' },
-  { id:'srv_vip_gold', category:'services', name:"VIP Gold", desc:'Как в /donate — 1400 Coins', price:1400 },
-  { id:'srv_pack_start', category:'services', name:'Набор стартовый', desc:'100.000$ — 180 Coins', price:180 },
-  { id:'srv_pack_biz', category:'services', name:'Набор бизнесмен', desc:'250.000$ — 400 Coins', price:400 },
-  { id:'srv_pack_solid', category:'services', name:'Набор солидный', desc:'550.000$ — 800 Coins', price:800 },
-  { id:'srv_pack_gold', category:'services', name:'Набор золотой', desc:'1.400.000$ — 1800 Coins', price:1800 },
-  { id:'srv_pack_million', category:'services', name:'Набор миллионер', desc:'7.500.000$ — 8000 Coins', price:8000 },
+  { id:'srv_vip_gold', category:'services', name:'VIP Gold', desc:'1400 Coins', price:1400 },
+  { id:'srv_pack_start', category:'services', name:'Набор стартовый', desc:'100.000$ · 180 Coins', price:180 },
+  { id:'srv_pack_biz', category:'services', name:'Набор бизнесмен', desc:'250.000$ · 400 Coins', price:400 },
+  { id:'srv_pack_solid', category:'services', name:'Набор солидный', desc:'550.000$ · 800 Coins', price:800 },
+  { id:'srv_pack_gold', category:'services', name:'Набор золотой', desc:'1.400.000$ · 1800 Coins', price:1800 },
+  { id:'srv_pack_million', category:'services', name:'Набор миллионер', desc:'7.500.000$ · 8000 Coins', price:8000 },
 ];
 
 let bridge;
@@ -366,12 +357,15 @@ if (typeof cef !== 'undefined') {
     emit(event, ...args){
       console.log('[MOCK cef.emit]', event, args);
       if (event === 'donate:buy') {
-        setTimeout(() => handlers['donate:response'] && handlers['donate:response'](true, 'Демо: покупка OK', args[0], 9999), 500);
+        setTimeout(() => handlers['donate:response'] && handlers['donate:response'](true, 'Демо: OK', args[0], 9999), 400);
+      }
+      if (event === 'donate:preview') {
+        setTimeout(() => handlers['donate:response'] && toast('success','Примерка','Скин на 30 сек (в игре)'), 100);
       }
     }
   };
   window.addEventListener('load', () => {
-    setTimeout(() => handlers['donate:init'] && handlers['donate:init'](12500, 'Player_Demo'), 50);
+    setTimeout(() => handlers['donate:init'] && handlers['donate:init'](12500, 'Player_Demo'), 80);
   });
 }
 
@@ -381,7 +375,7 @@ const ICONS = {
   car:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 13l1.5-5A2 2 0 0 1 6.4 6.5h11.2A2 2 0 0 1 19.5 8L21 13"/><rect x="2.5" y="13" width="19" height="5" rx="1.5"/><circle cx="7" cy="18.5" r="1.6"/><circle cx="17" cy="18.5" r="1.6"/></svg>',
   star:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.6 6.1 20.6l1.3-6.6-4.9-4.6 6.6-.8z"/></svg>',
 };
-function fmt(n){ return n.toLocaleString('ru-RU'); }
+function fmt(n){ return Number(n||0).toLocaleString('ru-RU'); }
 
 function renderCategories(){
   const nav = document.getElementById('categories');
@@ -419,16 +413,25 @@ function renderItems(){
   container.querySelectorAll('[data-buy]').forEach(btn => {
     btn.addEventListener('click', () => openConfirm(btn.dataset.buy));
   });
+  container.querySelectorAll('[data-try]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      bridge.emit('donate:preview', btn.dataset.try);
+      toast('success','Примерка','Запрос отправлен (30 сек, без бонусов)');
+    });
+  });
 }
 
 function cardHTML(item){
   const thumb = item.image
     ? `<img src="${item.image}" alt="${item.name}" onerror="this.style.display='none';this.parentElement.querySelector('.fallback').style.display='flex';"><div class="fallback" style="display:none;">${item.name}</div>`
     : `<div class="fallback" style="display:flex;">${item.name}</div>`;
+  const tryBtn = item.category==='skins'
+    ? `<button class="try-btn" data-try="${item.id}">Примерить</button>` : '';
   return `<div class="card"><div class="thumb">${item.badge?`<div class="badge">${item.badge}</div>`:''}${thumb}</div>
     <div class="info"><div class="name">${item.name}</div><div class="desc">${item.desc||''}</div>
     <div class="row"><div class="price"><div class="coin"></div>${fmt(item.price)}</div>
-    <button class="buy-btn" data-buy="${item.id}">Купить</button></div></div></div>`;
+    <div style="display:flex;gap:6px;flex-wrap:wrap;">${tryBtn}<button class="buy-btn" data-buy="${item.id}">Купить</button></div>
+    </div></div></div>`;
 }
 
 function rowHTML(item){
@@ -443,7 +446,11 @@ function openConfirm(itemId){
   if (!item) return;
   state.pendingItem = item;
   document.getElementById('c-name').textContent = item.name;
-  document.getElementById('c-price').textContent = fmt(item.price);
+  if (item.id === 'srv_exchange') {
+    document.getElementById('c-price').textContent = '1 = 700$';
+  } else {
+    document.getElementById('c-price').textContent = fmt(item.price);
+  }
   const thumbWrap = document.getElementById('c-thumb-wrap');
   const thumbImg = document.getElementById('c-thumb');
   if (item.image){ thumbWrap.style.display='block'; thumbImg.src=item.image; }
@@ -473,9 +480,15 @@ function validateInput(){
   const val = input.value.trim();
   let valid = val.length > 0;
   if (valid && item.inputPattern) valid = item.inputPattern.test(val);
+  if (valid && item.id === 'srv_exchange') valid = parseInt(val,10) >= 1;
   confirmBtn.disabled = !valid;
   hint.classList.toggle('error', val.length>0 && !valid);
-  hint.textContent = (val.length>0 && !valid) ? ('Неверный формат — '+(item.inputHint||'')) : (item.inputHint||'');
+  if (val.length>0 && !valid) hint.textContent = 'Неверный формат — '+(item.inputHint||'');
+  else if (item.id === 'srv_exchange' && valid) {
+    const n = parseInt(val,10);
+    hint.textContent = n + ' Coin = ' + fmt(n*700) + '$';
+    document.getElementById('c-price').textContent = fmt(n*700)+'$';
+  } else hint.textContent = item.inputHint||'';
   return valid;
 }
 
