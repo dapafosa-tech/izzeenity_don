@@ -287,29 +287,30 @@
 const CATEGORIES = [
   { id:'skins', label:'Скины', sub:'После покупки — в /backmoney (одежда)', icon:'user' },
   { id:'cars', label:'Машины', sub:'Талон → инвентарь / /backmoney', icon:'car' },
+  { id:'acc', label:'Аксессуары', sub:'После покупки — в /backmoney', icon:'star' },
   { id:'services', label:'Услуги', sub:'Цены как в классическом /donate', icon:'star' },
 ];
 
 /* Реальные товары из /donate мода (цены в Coins / stcoins) */
 const ITEMS = [
   // --- СКИНЫ (InsertBackMoney type=5) ---
-  { id:'skin_swfyri', category:'skins', name:'swfyri', desc:'Кастомный скин #800. После покупки в /backmoney', price:700, badge:'NEW',
+  { id:'skin_swfyri', category:'skins', name:'Девушка Крипс', desc:'Скин #800. x2 ЗП фракции + 50% IzCoin. /backmoney', price:3000, badge:'NEW',
     image:'' },
-  { id:'skin_wuzimu', category:'skins', name:'wuzimu', desc:'Эксклюзив #294. После покупки в /backmoney', price:2800, badge:'EXCL',
+  { id:'skin_wuzimu', category:'skins', name:'Вузиму', desc:'Эксклюзив #294. /backmoney', price:800, badge:'EXCL',
     image:'' },
-  { id:'skin_ryder', category:'skins', name:'ryder', desc:'Эксклюзив #271. После покупки в /backmoney', price:3100, badge:'EXCL',
+  { id:'skin_ryder', category:'skins', name:'Райдер', desc:'Эксклюзив #271. /backmoney', price:800, badge:'EXCL',
     image:'' },
-  { id:'skin_heck2', category:'skins', name:'heck2', desc:'Эксклюзив #259. После покупки в /backmoney', price:1800, badge:'EXCL',
+  { id:'skin_heck2', category:'skins', name:'Хек2', desc:'Эксклюзив #259. /backmoney', price:500, badge:'EXCL',
     image:'' },
-  { id:'skin_somori', category:'skins', name:'somori', desc:'Эксклюзив #228. После покупки в /backmoney', price:2500, badge:'EXCL',
+  { id:'skin_somori', category:'skins', name:'Сомори', desc:'Эксклюзив #228. /backmoney', price:800, badge:'EXCL',
     image:'' },
-  { id:'skin_cesar', category:'skins', name:'Cesar Vialpando', desc:'Скин #292. После покупки в /backmoney', price:300, image:'' },
-  { id:'skin_dwayne', category:'skins', name:'Dwayne', desc:'Скин #268. После покупки в /backmoney', price:300, image:'' },
-  { id:'skin_pimp', category:'skins', name:'Pimp', desc:'Скин #249. После покупки в /backmoney', price:300, image:'' },
-  { id:'skin_valet', category:'skins', name:'Valet', desc:'Скин #189. После покупки в /backmoney', price:300, image:'' },
-  { id:'skin_bodyguard', category:'skins', name:'Body Guard', desc:'Скин #97. После покупки в /backmoney', price:300, image:'' },
-  { id:'skin_beach', category:'skins', name:'Beach Visitor', desc:'Скин #18. После покупки в /backmoney', price:300, image:'' },
-  { id:'skin_paul', category:'skins', name:'Paul', desc:'Скин #291. После покупки в /backmoney', price:300, image:'' },
+  { id:'skin_cesar', category:'skins', name:'Сезарь Виальпандо', desc:'Скин #292. После покупки в /backmoney', price:300, image:'' },
+  { id:'skin_dwayne', category:'skins', name:'Дуэйн', desc:'Скин #268. После покупки в /backmoney', price:300, image:'' },
+  { id:'skin_pimp', category:'skins', name:'Пимп', desc:'Скин #249. После покупки в /backmoney', price:300, image:'' },
+  { id:'skin_valet', category:'skins', name:'Валет', desc:'Скин #189. После покупки в /backmoney', price:300, image:'' },
+  { id:'skin_bodyguard', category:'skins', name:'Телохранитель', desc:'Скин #97. После покупки в /backmoney', price:300, image:'' },
+  { id:'skin_beach', category:'skins', name:'Пляжный', desc:'Скин #18. После покупки в /backmoney', price:300, image:'' },
+  { id:'skin_paul', category:'skins', name:'Пол', desc:'Скин #291. После покупки в /backmoney', price:300, image:'' },
 
   // --- МАШИНЫ (талон / backmoney) ---
   { id:'car_audi', category:'cars', name:'Audi A8', desc:'Кастом #3194→612. Талон в инвентарь /backmoney', price:500, badge:'NEW', image:'' },
@@ -330,7 +331,13 @@ const ITEMS = [
   { id:'car_maybach', category:'cars', name:'Mercedes Maybach', desc:'Сервер-модель 651. Эксклюзив', price:3000, badge:'EXCL', image:'' },
   { id:'car_lc200', category:'cars', name:'Toyota LC 200', desc:'Сервер-модель 669. Эксклюзив', price:2700, badge:'EXCL', image:'' },
 
-  // --- УСЛУГИ (как в /donate) ---
+  
+  // --- АКСЕССУАРЫ (пример — добавьте свои id как в donate_cef) ---
+  { id:'acc_watch', category:'acc', name:'Часы', desc:'Аксессуар. После покупки в /backmoney', price:200, image:'' },
+  { id:'acc_glasses', category:'acc', name:'Очки', desc:'Аксессуар. После покупки в /backmoney', price:150, image:'' },
+  { id:'acc_hat', category:'acc', name:'Шляпа', desc:'Аксессуар. После покупки в /backmoney', price:180, image:'' },
+
+// --- УСЛУГИ (как в /donate) ---
   { id:'srv_nickname', category:'services', name:'Смена ника', desc:'Цена как в /donate — 50 Coins', price:50,
     requiresInput:true, inputLabel:'Новый ник', inputPlaceholder:'Name_Surname',
     inputPattern:/^[A-Z][a-z]+_[A-Z][a-z]+$/, inputHint:'Формат: Name_Surname, латиница' },
