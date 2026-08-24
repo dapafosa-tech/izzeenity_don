@@ -80,6 +80,26 @@ textarea{min-height:72px;resize:none}
 .home-bar{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);width:36%;height:5px;background:#3a4155;border-radius:4px}
 .close-mini{position:absolute;top:42px;right:16px;width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,.06);
 border:1px solid var(--line);color:var(--muted);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;z-index:15}
+
+.bubble{max-width:78%;padding:9px 12px;border-radius:14px;font-size:13px;line-height:1.35;word-break:break-word}
+.bubble.mine{align-self:flex-end;background:linear-gradient(180deg,#a97bff,#8455f0);color:#fff;border-bottom-right-radius:4px}
+.bubble.theirs{align-self:flex-start;background:var(--card);border:1px solid var(--line);border-bottom-left-radius:4px}
+.bubble small{display:block;margin-top:3px;font-size:10px;opacity:.7}
+
+/* call screen */
+.call-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:space-between;
+  background:radial-gradient(circle at 50% 20%, #1c2030 0%, #06070c 70%);border-radius:24px;padding:28px 10px 22px;margin-top:-4px}
+.call-avatar{width:96px;height:96px;border-radius:50%;background:linear-gradient(135deg,#2a3144,#151a26);
+  display:flex;align-items:center;justify-content:center;font-size:38px;font-weight:800;color:var(--muted);
+  border:1px solid var(--line);margin-top:26px}
+.call-name{font-size:19px;font-weight:800;margin-top:16px;text-align:center;padding:0 12px}
+.call-status{font-size:13px;color:var(--muted);margin-top:8px;font-weight:700;letter-spacing:.3px}
+.call-status.active{color:var(--green)}
+.call-actions{display:flex;gap:22px;align-items:center;padding-bottom:6px}
+.call-btn{width:58px;height:58px;border-radius:50%;border:none;display:flex;align-items:center;justify-content:center;
+  font-size:24px;cursor:pointer;color:#fff}
+.call-btn.answer{background:linear-gradient(180deg,#2ed573,#1ea856)}
+.call-btn.hangup{background:linear-gradient(180deg,#ff7a8a,#e74c3c)}
 </style>
 </head>
 <body>
@@ -114,6 +134,19 @@ border:1px solid var(--line);color:var(--muted);display:flex;align-items:center;
       <p class="msg">Сервисы: 911. /call работает как раньше.</p>
     </div>
 
+    <div class="page" id="page-callscreen">
+      <div class="call-wrap">
+        <div>
+          <div class="call-avatar" id="call-avatar">?</div>
+          <div class="call-name" id="call-name">—</div>
+          <div class="call-status" id="call-status">Соединение...</div>
+        </div>
+        <div class="call-actions" id="call-actions">
+          <button class="call-btn hangup" id="btn-call-hangup">☎</button>
+        </div>
+      </div>
+    </div>
+
     <div class="page" id="page-sms">
       <div class="back" data-back>← Назад</div>
       <h2>Сообщения</h2>
@@ -127,6 +160,8 @@ border:1px solid var(--line);color:var(--muted);display:flex;align-items:center;
       <div class="back" id="back-sms">← К списку</div>
       <h2 id="thread-title">Чат</h2>
       <div class="list" id="thread-list"></div>
+      <textarea id="thread-text" placeholder="Сообщение..." maxlength="64" style="min-height:44px"></textarea>
+      <button class="btn btn-v" id="btn-thread-send">Отправить</button>
     </div>
 
     <div class="page" id="page-taxi">
@@ -194,6 +229,11 @@ const stage = document.getElementById('stage');
 let closing = false;
 let openTimer = null;
 
+// ---- call state ----
+let callTimer = null;
+let callSeconds = 0;
+let callState = 'idle'; // idle | outgoing | incoming | active | ended
+
 function showPage(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   const el = document.getElementById(id);
@@ -206,7 +246,12 @@ function phoneOpen(){
   // force reflow so transition plays every time
   void stage.offsetWidth;
   stage.classList.add('open');
-  showPage('page-home');
+  // if a call is currently ringing/active, jump straight to the call screen
+  if(callState === 'outgoing' || callState === 'incoming' || callState === 'active'){
+    showPage('page-callscreen');
+  } else {
+    showPage('page-home');
+  }
 }
 
 function phoneClose(){
@@ -219,6 +264,7 @@ function phoneClose(){
   stage.classList.add('closing');
   stage.classList.remove('open');
   // после анимации сообщаем серверу (не спамим)
+  // NB: closing the UI does NOT end an active call - that keeps running server-side.
   clearTimeout(openTimer);
   openTimer = setTimeout(()=>{
     closing = false;
@@ -243,10 +289,18 @@ document.getElementById('btn-call').onclick = ()=>{
   const n = document.getElementById('call-number').value.trim();
   if(n) bridge.emit('phone:call', n);
 };
+
+document.getElementById('btn-call-hangup').onclick = ()=>{
+  bridge.emit('phone:callend');
+};
+
 document.getElementById('btn-sms').onclick = ()=>{
   const to = document.getElementById('sms-to').value.trim();
   const t = document.getElementById('sms-text').value.trim();
-  if(to && t) bridge.emit('phone:sms', to, t);
+  if(to && t){
+    bridge.emit('phone:sms', to, t);
+    document.getElementById('sms-text').value = '';
+  }
 };
 document.getElementById('btn-taxi').onclick = ()=>{
   const p = document.getElementById('taxi-place').value.trim();
@@ -282,47 +336,150 @@ function setDark(nick){
   }
 }
 
+function safeParse(raw){
+  try { return JSON.parse(raw); } catch(e){ return []; }
+}
+
+// ---- SMS list / thread ----
+let currentThreadNumber = null;
+
+function renderSmsList(list){
+  const box = document.getElementById('sms-list'); box.innerHTML = '';
+  list.forEach(c=>{
+    const d = document.createElement('div'); d.className = 'item';
+    d.innerHTML = `<div><b>${c.name || c.number}</b><br><small>${c.last || ''}</small></div>`;
+    d.onclick = ()=>{
+      currentThreadNumber = c.number;
+      document.getElementById('thread-title').textContent = c.name || c.number;
+      document.getElementById('thread-list').innerHTML = '';
+      bridge.emit('phone:smsopen', String(c.number));
+      showPage('page-sms-thread');
+    };
+    box.appendChild(d);
+  });
+}
+
+function appendBubble(text, mine, time){
+  const tl = document.getElementById('thread-list');
+  const b = document.createElement('div');
+  b.className = 'bubble ' + (mine ? 'mine' : 'theirs');
+  b.innerHTML = `${text}${time ? `<small>${time}</small>` : ''}`;
+  tl.appendChild(b);
+  tl.scrollTop = tl.scrollHeight;
+}
+
+function renderThread(list){
+  const tl = document.getElementById('thread-list'); tl.innerHTML = '';
+  list.forEach(m=> appendBubble(m.text, !!m.mine, m.time));
+}
+
+document.getElementById('btn-thread-send').onclick = ()=>{
+  const t = document.getElementById('thread-text').value.trim();
+  if(t && currentThreadNumber != null){
+    bridge.emit('phone:sms', String(currentThreadNumber), t);
+    appendBubble(t, true, '');
+    document.getElementById('thread-text').value = '';
+  }
+};
+
+// ---- call screen rendering ----
+function stopCallTimer(){
+  if(callTimer){ clearInterval(callTimer); callTimer = null; }
+  callSeconds = 0;
+}
+
+function formatDuration(s){
+  const m = Math.floor(s/60), sec = s%60;
+  return String(m).padStart(2,'0') + ':' + String(sec).padStart(2,'0');
+}
+
+function renderCallScreen(state, name, number){
+  const avatar = document.getElementById('call-avatar');
+  const nameEl = document.getElementById('call-name');
+  const statusEl = document.getElementById('call-status');
+  const actions = document.getElementById('call-actions');
+
+  nameEl.textContent = name || (number ? String(number) : '—');
+  avatar.textContent = (name && name.length) ? name[0].toUpperCase() : '?';
+
+  statusEl.classList.remove('active');
+
+  if(state === 'outgoing'){
+    statusEl.textContent = 'Соединение...';
+    actions.innerHTML = '<button class="call-btn hangup" id="btn-call-hangup">☎</button>';
+  } else if(state === 'incoming'){
+    statusEl.textContent = 'Входящий звонок...';
+    actions.innerHTML = `
+      <button class="call-btn answer" id="btn-call-answer">📞</button>
+      <button class="call-btn hangup" id="btn-call-hangup">☎</button>`;
+  } else if(state === 'active'){
+    statusEl.classList.add('active');
+    statusEl.textContent = '00:00';
+    actions.innerHTML = '<button class="call-btn hangup" id="btn-call-hangup">☎</button>';
+    stopCallTimer();
+    callTimer = setInterval(()=>{
+      callSeconds++;
+      statusEl.textContent = formatDuration(callSeconds);
+    }, 1000);
+  }
+
+  // re-bind buttons (innerHTML was replaced)
+  const hb = document.getElementById('btn-call-hangup');
+  if(hb) hb.onclick = ()=> bridge.emit('phone:callend');
+  const ab = document.getElementById('btn-call-answer');
+  if(ab) ab.onclick = ()=> bridge.emit('phone:callanswer');
+}
+
 if(bridge.on){
   bridge.on('phone:open', phoneOpen);
   bridge.on('phone:forceclose', phoneClose);
   bridge.on('phone:darkstatus', (nick)=>setDark(nick||''));
-  bridge.on('phone:smslist', (list)=>{
-    const box = document.getElementById('sms-list'); box.innerHTML = '';
-    (list||[]).forEach(c=>{
-      const d = document.createElement('div'); d.className = 'item';
-      d.innerHTML = `<div><b>${c.name||c.number}</b><br><small>${c.last||''}</small></div>`;
-      d.onclick = ()=>{
-        document.getElementById('thread-title').textContent = c.name||c.number;
-        const tl = document.getElementById('thread-list'); tl.innerHTML = '';
-        (c.messages||[]).forEach(m=>{
-          const x = document.createElement('div'); x.className = 'item';
-          x.innerHTML = `<div>${m.text}<br><small>${m.time||''}</small></div>`;
-          tl.appendChild(x);
-        });
-        showPage('page-sms-thread');
-      };
-      box.appendChild(d);
-    });
+
+  bridge.on('phone:smslist', (raw)=> renderSmsList(safeParse(raw)));
+  bridge.on('phone:smsthread', (raw)=> renderThread(safeParse(raw)));
+  bridge.on('phone:smsnew', (text)=>{
+    appendBubble(text, false, '');
   });
-  bridge.on('phone:adslist', (list)=>{
+
+  bridge.on('phone:adslist', (raw)=>{
+    const list = safeParse(raw);
     const box = document.getElementById('ads-list'); box.innerHTML = '';
-    (list||[]).forEach(a=>{
+    list.forEach(a=>{
       const d = document.createElement('div'); d.className = 'item';
       d.innerHTML = `<div><b>${a.title}</b> — ${a.price}$<br><small>${a.nick}: ${a.body}</small></div>`;
       box.appendChild(d);
     });
   });
-  bridge.on('phone:inbox', (list)=>{
+
+  bridge.on('phone:inbox', (raw)=>{
+    const list = safeParse(raw);
     const box = document.getElementById('inbox-list'); box.innerHTML = '';
-    (list||[]).forEach(m=>{
+    list.forEach(m=>{
       const d = document.createElement('div'); d.className = 'item';
       d.innerHTML = `<div><b>${m.from}</b><br><small>${m.text}</small></div>`;
       box.appendChild(d);
     });
   });
+
+  // state, name, number
+  bridge.on('phone:callstate', (state, name, number)=>{
+    callState = state;
+    if(state === 'ended'){
+      stopCallTimer();
+      renderCallScreen('outgoing', '', 0);
+      document.getElementById('call-status').textContent = 'Звонок завершён';
+      showPage('page-call');
+      return;
+    }
+    renderCallScreen(state, name, number);
+    // always surface the call screen for outgoing/incoming/active states,
+    // even if the phone UI is currently closed.
+    if(!stage.classList.contains('open')) phoneOpen();
+    showPage('page-callscreen');
+  });
 }
 
-// ESC — плавное закрытие (один раз за анимацию)
+// ESC — плавное закрытие (один раз за анимацию), не завершает звонок
 document.addEventListener('keydown', (e)=>{
   if(e.key === 'Escape' || e.keyCode === 27){
     e.preventDefault();
